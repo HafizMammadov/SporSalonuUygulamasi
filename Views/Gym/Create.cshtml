@@ -1,0 +1,30 @@
+﻿@model SporSalonuUygulamasi.Models.Gym
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4>Yeni Spor Salonu Ekle</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+                        <div class="mb-3">
+                            <label class="form-label">Salon Adı</label>
+                            <input asp-for="Name" class="form-control" placeholder="Örn: Merkez Şube" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Adres</label>
+                            <input asp-for="Address" class="form-control" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Çalışma Saatleri</label>
+                            <input asp-for="WorkingHours" class="form-control" placeholder="09:00 - 22:00" />
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">Kaydet</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

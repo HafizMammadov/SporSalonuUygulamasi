@@ -1,0 +1,28 @@
+﻿@model IEnumerable<SporSalonuUygulamasi.Models.Gym>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Spor Salonu Şubeleri</h2>
+        <a asp-action="Create" class="btn btn-primary">+ Yeni Salon Ekle</a>
+    </div>
+
+    <table class="table table-striped table-hover shadow-sm">
+        <thead class="table-dark">
+            <tr>
+                <th>Salon Adı</th>
+                <th>Adres</th>
+                <th>Çalışma Saatleri</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Name</td>
+                    <td>@item.Address</td>
+                    <td>@item.WorkingHours</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

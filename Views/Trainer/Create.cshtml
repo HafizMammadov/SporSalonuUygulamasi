@@ -1,0 +1,43 @@
+﻿@model SporSalonuUygulamasi.Models.Trainer
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white">
+                    <h4>Yeni Antrenör Ekle</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+
+                        <div class="mb-3">
+                            <label class="form-label">Ad Soyad</label>
+                            <input asp-for="FullName" class="form-control" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Uzmanlık Alanı</label>
+                            <input asp-for="ExpertiseArea" class="form-control" placeholder="Örn: Fitness, Bodybuilding" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Çalıştığı Salon</label>
+                            <select asp-for="GymId" class="form-control" asp-items="ViewBag.Gyms">
+                                <option value="">-- Bir Salon Seçin --</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Verdiği Hizmet</label>
+                            <select asp-for="ServiceId" class="form-control" asp-items="ViewBag.Services">
+                                <option value="">-- Bir Hizmet Seçin --</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100">Kaydet</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
