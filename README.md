@@ -12,4 +12,4 @@
 * C#
 * .NET 8 (Core MVC)
 * SQL Server
-* HTML
+* HTMl
