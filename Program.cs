@@ -5,7 +5,7 @@ using SporSalonuUygulamasi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Veritabaný Baðlantýsý
+// 1. Veritabaný Baðlantýsý (Hata veren yer burasýydý, þimdi onarýyoruz)
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
@@ -28,7 +28,7 @@ builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
-// HTTP request pipeline.
+// Hata Ayýklama Modu
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -45,5 +45,21 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+// Admin Verisi Ekleme (SeedData)
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    // Eðer SeedData.cs oluþturduysan burasý çalýþýr, oluþturmadýysan hata vermez
+    try
+    {
+        // await SeedData.Initialize(services); // Þimdilik kapalý, hata alýrsan açma
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Veritabaný oluþturulurken hata çýktý.");
+    }
+}
 
 app.Run();

@@ -1,0 +1,48 @@
+﻿@model SporSalonuUygulamasi.Models.Gym
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark">
+                    <h4>Salonu Düzenle</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit" method="post">
+                        <input type="hidden" asp-for="GymId" />
+                        <input type="hidden" asp-for="WorkingHours" />
+
+                        <div class="mb-3">
+                            <label class="form-label">Salon Adı</label>
+                            <input asp-for="Name" class="form-control" required />
+                            <span asp-validation-for="Name" class="text-danger fw-bold small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Adres <span class="text-danger">*</span></label>
+                            <textarea asp-for="Address" class="form-control" rows="2"></textarea>
+                            <span asp-validation-for="Address" class="text-danger fw-bold small"></span>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label class="form-label">Açılış Saati <span class="text-danger">*</span></label>
+                                <input type="time" name="acilisSaati" class="form-control" value="@ViewBag.Acilis" required />
+                            </div>
+                            <div class="col">
+                                <label class="form-label">Kapanış Saati <span class="text-danger">*</span></label>
+                                <input type="time" name="kapanisSaati" class="form-control" value="@ViewBag.Kapanis" required />
+                            </div>
+                        </div>
+                        <span asp-validation-for="WorkingHours" class="text-danger fw-bold small"></span>
+
+                        <button type="submit" class="btn btn-warning w-100">Güncelle</button>
+                    </form>
+                </div>
+            </div>
+            <div class="text-center mt-2">
+                <a asp-action="Index">Listeye Dön</a>
+            </div>
+        </div>
+    </div>
+</div>

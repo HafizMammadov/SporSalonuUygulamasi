@@ -1,0 +1,14 @@
+﻿@model SporSalonuUygulamasi.Models.Gym
+
+<div class="container mt-4">
+    <div class="alert alert-danger">
+        <h3>Silmek istediğine emin misin?</h3>
+        <p><strong>@Model.Name</strong> adlı salon silinecek. Bu işlem geri alınamaz.</p>
+    </div>
+
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="GymId" />
+        <button type="submit" class="btn btn-danger">Evet, Sil</button>
+        <a asp-action="Index" class="btn btn-secondary">Hayır, Vazgeç</a>
+    </form>
+</div>

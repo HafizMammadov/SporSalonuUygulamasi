@@ -1,29 +1,50 @@
-﻿@model SporSalonuUygulamasi.Models.Gym
+﻿@model SporSalonuUygulamasi.Models.Trainer
 
 <div class="container mt-4">
     <div class="row justify-content-center">
         <div class="col-md-6">
             <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h4>Yeni Spor Salonu Ekle</h4>
+                <div class="card-header bg-danger text-white">
+                    <h4>Yeni Antrenör Ekle</h4>
                 </div>
                 <div class="card-body">
                     <form asp-action="Create" method="post">
+
                         <div class="mb-3">
-                            <label class="form-label">Salon Adı</label>
-                            <input asp-for="Name" class="form-control" placeholder="Örn: Merkez Şube" />
+                            <label class="form-label fw-bold">Çalışacağı Salon</label>
+                            <select asp-for="GymId" class="form-control" asp-items="ViewBag.GymList">
+                                <option value="">-- Bir Salon Seçiniz --</option>
+                            </select>
+                            <span asp-validation-for="GymId" class="text-danger small"></span>
                         </div>
+
                         <div class="mb-3">
-                            <label class="form-label">Adres</label>
-                            <input asp-for="Address" class="form-control" />
+                            <label class="form-label fw-bold">Uzmanlık Alanı (Hizmet)</label>
+                            <select asp-for="ServiceId" class="form-control" asp-items="ViewBag.ServiceList">
+                                <option value="">-- Bir Hizmet Seçiniz --</option>
+                            </select>
+                            <span asp-validation-for="ServiceId" class="text-danger small"></span>
                         </div>
+
+                        <hr />
+
                         <div class="mb-3">
-                            <label class="form-label">Çalışma Saatleri</label>
-                            <input asp-for="WorkingHours" class="form-control" placeholder="09:00 - 22:00" />
+                            <label class="form-label">Ad Soyad</label>
+                            <input asp-for="FullName" class="form-control" placeholder="Örn: Ahmet Yılmaz" />
+                            <span asp-validation-for="FullName" class="text-danger small"></span>
                         </div>
-                        <button type="submit" class="btn btn-success w-100">Kaydet</button>
+
+                        <div class="mb-3">
+                            <label class="form-label">Ekstra Uzmanlık Bilgisi</label>
+                            <input asp-for="ExpertiseArea" class="form-control" placeholder="Örn: Beslenme Uzmanı, 3. Kademe Antrenör" />
+                        </div>
+
+                        <button type="submit" class="btn btn-danger w-100">Kaydet</button>
                     </form>
                 </div>
+            </div>
+            <div class="text-center mt-2">
+                <a asp-action="Index">Listeye Dön</a>
             </div>
         </div>
     </div>
