@@ -20,7 +20,6 @@ namespace SporSalonuUygulamasi.Models
         public string WorkingHours { get; set; } // Örn: "09:00-22:00"
 
         public virtual ICollection<Trainer> Trainers { get; set; } = new List<Trainer>();
-        
         public virtual ICollection<GymService> GymServices { get; set; } = new List<GymService>();
     }
 }
