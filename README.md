@@ -11,5 +11,5 @@
 ## Teknolojiler
 * C#
 * .NET 8 (Core MVC)
-* PostgreSQL
-* HTML
+* SQL Server
+* HTMl
