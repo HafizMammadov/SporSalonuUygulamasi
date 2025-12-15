@@ -1,10 +1,12 @@
-﻿using SporSalonuUygulamasi.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SporSalonuUygulamasi.Data;
+using SporSalonuUygulamasi.Models;
 using System.Linq;
 
 namespace SporSalonuUygulamasi.Controllers
 {
+    [Authorize]
     public class ServiceController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -14,21 +16,18 @@ namespace SporSalonuUygulamasi.Controllers
             _context = context;
         }
 
-        // 1. LİSTELEME SAYFASI
         public IActionResult Index()
         {
             var services = _context.Services.ToList();
             return View(services);
         }
 
-        // 2. EKLEME SAYFASI (Formu Gösterir)
         [HttpGet]
         public IActionResult Create()
         {
             return View();
         }
 
-        // 3. EKLEME İŞLEMİ (Veriyi Kaydeder)
         [HttpPost]
         public IActionResult Create(Service service)
         {

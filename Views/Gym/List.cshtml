@@ -1,0 +1,75 @@
+@model IEnumerable<SporSalonuUygulamasi.Models.Gym>
+
+@{
+    ViewData["Title"] = "Salonları Listele";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2><i class="bi bi-building"></i> Spor Salonu Şubeleri</h2>
+        <div>
+            <a asp-action="Create" class="btn btn-success">+ Yeni Şube Ekle</a>
+            <a asp-action="Index" class="btn btn-secondary">Menüye Dön</a>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> Henüz kayıtlı salon bulunmamaktadır.
+        </div>
+    }
+    else
+    {
+        <table class="table table-hover shadow-sm border">
+            <thead class="table-dark">
+                <tr>
+                    <th>Salon Adı</th>
+                    <th>Adres</th>
+                    <th>Çalışma Saatleri</th>
+                    <th>Hizmetler</th>
+                    <th>İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td><strong>@item.Name</strong></td>
+                        <td>@item.Address</td>
+                        <td><span class="badge bg-info">@item.WorkingHours</span></td>
+                        <td>
+                            @if (item.GymServices != null && item.GymServices.Any())
+                            {
+                                <ul class="list-unstyled mb-0">
+                                    @foreach (var service in item.GymServices)
+                                    {
+                                        <li>
+                                            <span class="badge bg-secondary">@service.ServiceName</span>
+                                            <small class="text-success">@service.HourlyRate.ToString("C2")/saat</small>
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <span class="text-muted">-</span>
+                            }
+                        </td>
+                        <td>
+                            <a asp-action="Edit" asp-route-id="@item.GymId" class="btn btn-sm btn-warning">
+                                <i class="bi bi-pencil"></i> Düzenle
+                            </a>
+                            <form asp-action="Delete" asp-route-id="@item.GymId" method="post" class="d-inline" 
+                                  onsubmit="return confirm('Bu salonu silmek istediğinizden emin misiniz?');">
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                    <i class="bi bi-trash"></i> Sil
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

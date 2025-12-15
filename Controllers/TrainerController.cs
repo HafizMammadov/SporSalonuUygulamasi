@@ -1,12 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering; // Dropdown için şart
-using Microsoft.EntityFrameworkCore; // Include için şart
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using SporSalonuUygulamasi.Data;
 using SporSalonuUygulamasi.Models;
 using System.Linq;
 
 namespace SporSalonuUygulamasi.Controllers
 {
+    [Authorize]
     public class TrainerController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -16,34 +18,39 @@ namespace SporSalonuUygulamasi.Controllers
             _context = context;
         }
 
-        // LİSTELEME
+        // Ana menü sayfası
         public IActionResult Index()
         {
-            // Eğitmenleri listelerken Salonunu ve Hizmetini de getir
-            var trainers = _context.Trainers
-                                   .Include(t => t.Gym)
-                                   .Include(t => t.Service)
-                                   .ToList();
-            return View(trainers);
-        }
-
-        // EKLEME SAYFASI (GET)
-        [HttpGet]
-        public IActionResult Create()
-        {
-            // 1. Salonları Dropdown için hazırla
-            ViewBag.GymList = new SelectList(_context.Gyms.ToList(), "GymId", "Name");
-
-            // 2. Hizmetleri Dropdown için hazırla
-            ViewBag.ServiceList = new SelectList(_context.Services.ToList(), "ServiceId", "Name");
-
             return View();
         }
 
-        // EKLEME İŞLEMİ (POST)
-        [HttpPost]
-        public IActionResult Create(Trainer trainer)
+        // Eğitmenleri listele
+        public IActionResult List()
         {
+            var trainers = _context.Trainers.Include(t => t.Gym).ToList();
+            return View(trainers);
+        }
+
+        [HttpGet]
+        public IActionResult Create()
+        {
+            ViewBag.GymList = new SelectList(_context.Gyms.ToList(), "GymId", "Name");
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult Create(Trainer trainer, string acilisSaati, string kapanisSaati)
+        {
+            // Çalışma saatleri kontrolü
+            if (string.IsNullOrEmpty(acilisSaati) || string.IsNullOrEmpty(kapanisSaati))
+            {
+                ModelState.AddModelError("WorkingHours", "Lütfen çalışma saatlerini giriniz!");
+            }
+            else
+            {
+                trainer.WorkingHours = $"{acilisSaati} - {kapanisSaati}";
+            }
+
             if (ModelState.IsValid)
             {
                 _context.Trainers.Add(trainer);
@@ -51,14 +58,60 @@ namespace SporSalonuUygulamasi.Controllers
                 return RedirectToAction("Index");
             }
 
-            // Hata olursa (örn: boş alan) listeleri tekrar yükle
-            ViewBag.GymList = new SelectList(_context.Gyms.ToList(), "GymId", "Name");
-            ViewBag.ServiceList = new SelectList(_context.Services.ToList(), "ServiceId", "Name");
+            ViewBag.GymList = new SelectList(_context.Gyms.ToList(), "GymId", "Name", trainer.GymId);
+            ViewBag.Acilis = acilisSaati;
+            ViewBag.Kapanis = kapanisSaati;
+            return View(trainer);
+        }
+
+        [HttpGet]
+        public IActionResult Edit(int id)
+        {
+            var trainer = _context.Trainers.Find(id);
+            if (trainer == null) return NotFound();
+
+            ViewBag.GymList = new SelectList(_context.Gyms.ToList(), "GymId", "Name", trainer.GymId);
+
+            if (!string.IsNullOrEmpty(trainer.WorkingHours) && trainer.WorkingHours.Contains("-"))
+            {
+                var saatler = trainer.WorkingHours.Split('-');
+                ViewBag.Acilis = saatler[0].Trim();
+                ViewBag.Kapanis = saatler[1].Trim();
+            }
 
             return View(trainer);
         }
 
-        // SİLME İŞLEMİ
+        [HttpPost]
+        public IActionResult Edit(int id, Trainer trainer, string acilisSaati, string kapanisSaati)
+        {
+            trainer.TrainerId = id;
+            
+            // Çalışma saatleri kontrolü
+            if (string.IsNullOrEmpty(acilisSaati) || string.IsNullOrEmpty(kapanisSaati))
+            {
+                ModelState.AddModelError("WorkingHours", "Lütfen çalışma saatlerini giriniz!");
+            }
+            else
+            {
+                trainer.WorkingHours = $"{acilisSaati} - {kapanisSaati}";
+            }
+
+            if (ModelState.IsValid)
+            {
+                _context.Trainers.Update(trainer);
+                _context.SaveChanges();
+                return RedirectToAction("Index");
+            }
+
+            ViewBag.GymList = new SelectList(_context.Gyms.ToList(), "GymId", "Name", trainer.GymId);
+            ViewBag.Acilis = acilisSaati;
+            ViewBag.Kapanis = kapanisSaati;
+
+            return View(trainer);
+        }
+
+        [HttpPost]
         public IActionResult Delete(int id)
         {
             var trainer = _context.Trainers.Find(id);
@@ -67,7 +120,8 @@ namespace SporSalonuUygulamasi.Controllers
                 _context.Trainers.Remove(trainer);
                 _context.SaveChanges();
             }
-            return RedirectToAction("Index");
+            return RedirectToAction("List");
         }
     }
 }
+

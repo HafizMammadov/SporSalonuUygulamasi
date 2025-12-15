@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema; // ForeignKey için gerekli
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SporSalonuUygulamasi.Models
 {
@@ -9,22 +9,26 @@ namespace SporSalonuUygulamasi.Models
         public int ServiceId { get; set; }
 
         [Required(ErrorMessage = "Hizmet adı zorunludur.")]
-        public string Name { get; set; } = null!; // Örn: Pilates, Yoga
+        [Display(Name = "Hizmet Adı")]
+        public string Name { get; set; }
 
-        [Required(ErrorMessage = "Süre girmek zorunludur.")]
-        public int DurationMinutes { get; set; } // Süre (dk)
+        [Display(Name = "Süre (Dakika)")]
+        public int DurationMinutes { get; set; }
 
-        [Required(ErrorMessage = "Ücret girmek zorunludur.")]
-        public decimal Price { get; set; } // Ücret
+        [Display(Name = "Ücret")]
+        public decimal Price { get; set; }
 
-        public string? Description { get; set; }
+        [Display(Name = "Açıklama")]
+        public string Description { get; set; }
 
-        
-        [Required(ErrorMessage = "Lütfen bir salon seçiniz.")]
+        public string ImageUrl { get; set; }
+
+        // Gym ilişkisi (veritabanı şemasına uygun)
         public int GymId { get; set; }
 
         [ForeignKey("GymId")]
-        public virtual Gym? Gym { get; set; }
-     
+        public virtual Gym Gym { get; set; }
+
+        public virtual ICollection<Trainer> Trainers { get; set; } = new List<Trainer>();
     }
 }

@@ -1,48 +1,157 @@
 ﻿@model SporSalonuUygulamasi.Models.Gym
 
+@{
+    ViewData["Title"] = "Salonu Düzenle";
+}
+
 <div class="container mt-4">
     <div class="row justify-content-center">
-        <div class="col-md-6">
+        <div class="col-md-8">
             <div class="card shadow">
                 <div class="card-header bg-warning text-dark">
-                    <h4>Salonu Düzenle</h4>
+                    <h4><i class="bi bi-pencil"></i> Salonu Düzenle</h4>
                 </div>
                 <div class="card-body">
-                    <form asp-action="Edit" method="post">
-                        <input type="hidden" asp-for="GymId" />
-                        <input type="hidden" asp-for="WorkingHours" />
-
+                    <form asp-action="Edit" asp-route-gymId="@Model.GymId" method="post" id="gymForm">
+                        
                         <div class="mb-3">
-                            <label class="form-label">Salon Adı</label>
+                            <label class="form-label fw-bold">Salon Adı <span class="text-danger">*</span></label>
                             <input asp-for="Name" class="form-control" required />
-                            <span asp-validation-for="Name" class="text-danger fw-bold small"></span>
+                            <span asp-validation-for="Name" class="text-danger small"></span>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Adres <span class="text-danger">*</span></label>
-                            <textarea asp-for="Address" class="form-control" rows="2"></textarea>
-                            <span asp-validation-for="Address" class="text-danger fw-bold small"></span>
+                            <label class="form-label fw-bold">Adres <span class="text-danger">*</span></label>
+                            <textarea asp-for="Address" class="form-control" rows="2" required></textarea>
+                            <span asp-validation-for="Address" class="text-danger small"></span>
                         </div>
 
                         <div class="row mb-3">
                             <div class="col">
-                                <label class="form-label">Açılış Saati <span class="text-danger">*</span></label>
+                                <label class="form-label fw-bold">Açılış Saati <span class="text-danger">*</span></label>
                                 <input type="time" name="acilisSaati" class="form-control" value="@ViewBag.Acilis" required />
                             </div>
                             <div class="col">
-                                <label class="form-label">Kapanış Saati <span class="text-danger">*</span></label>
+                                <label class="form-label fw-bold">Kapanış Saati <span class="text-danger">*</span></label>
                                 <input type="time" name="kapanisSaati" class="form-control" value="@ViewBag.Kapanis" required />
                             </div>
                         </div>
-                        <span asp-validation-for="WorkingHours" class="text-danger fw-bold small"></span>
+                        <span asp-validation-for="WorkingHours" class="text-danger small"></span>
 
-                        <button type="submit" class="btn btn-warning w-100">Güncelle</button>
+                        <hr />
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Hizmetler <span class="text-danger">*</span></label>
+                            <small class="text-muted d-block mb-2">En az bir hizmet olmalıdır.</small>
+                            
+                            <div id="servicesContainer">
+                                @if (Model.GymServices != null && Model.GymServices.Any())
+                                {
+                                    @foreach (var service in Model.GymServices)
+                                    {
+                                        <div class="row mb-2 service-row">
+                                            <div class="col-md-6">
+                                                <input type="text" name="serviceNames" class="form-control" value="@service.ServiceName" required />
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="input-group">
+                                                    <input type="number" name="hourlyRates" class="form-control" value="@service.HourlyRate" step="0.01" min="0.01" required />
+                                                    <span class="input-group-text">₺/saat</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <button type="button" class="btn btn-danger btn-remove-service" onclick="removeService(this)">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <div class="row mb-2 service-row">
+                                        <div class="col-md-6">
+                                            <input type="text" name="serviceNames" class="form-control" placeholder="Hizmet adı" required />
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="input-group">
+                                                <input type="number" name="hourlyRates" class="form-control" placeholder="Saatlik ücret" step="0.01" min="0.01" required />
+                                                <span class="input-group-text">₺/saat</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <button type="button" class="btn btn-danger btn-remove-service" onclick="removeService(this)" style="display:none;">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+
+                            <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="addService()">
+                                <i class="bi bi-plus"></i> Hizmet Ekle
+                            </button>
+                        </div>
+
+                        <hr />
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> İptal
+                            </a>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="bi bi-check-circle"></i> Tamam
+                            </button>
+                        </div>
                     </form>
                 </div>
-            </div>
-            <div class="text-center mt-2">
-                <a asp-action="Index">Listeye Dön</a>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        function addService() {
+            var container = document.getElementById('servicesContainer');
+            var newRow = document.createElement('div');
+            newRow.className = 'row mb-2 service-row';
+            newRow.innerHTML = `
+                <div class="col-md-6">
+                    <input type="text" name="serviceNames" class="form-control" placeholder="Hizmet adı" required />
+                </div>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <input type="number" name="hourlyRates" class="form-control" placeholder="Saatlik ücret" step="0.01" min="0.01" required />
+                        <span class="input-group-text">₺/saat</span>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-danger btn-remove-service" onclick="removeService(this)">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            `;
+            container.appendChild(newRow);
+            updateRemoveButtons();
+        }
+
+        function removeService(button) {
+            var row = button.closest('.service-row');
+            row.remove();
+            updateRemoveButtons();
+        }
+
+        function updateRemoveButtons() {
+            var rows = document.querySelectorAll('.service-row');
+            rows.forEach(function(row, index) {
+                var removeBtn = row.querySelector('.btn-remove-service');
+                if (removeBtn) {
+                    removeBtn.style.display = rows.length > 1 ? 'block' : 'none';
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', updateRemoveButtons);
+    </script>
+}

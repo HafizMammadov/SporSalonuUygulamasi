@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace SporSalonuUygulamasi.Models
 {
@@ -9,15 +8,19 @@ namespace SporSalonuUygulamasi.Models
         public int GymId { get; set; }
 
         [Required(ErrorMessage = "Salon adı zorunludur.")]
-        public string Name { get; set; } = null!;
+        [Display(Name = "Salon Adı")]
+        public string Name { get; set; }
 
-        // --- GÜNCELLEME: Adres artık zorunlu ---
-        [Required(ErrorMessage = "Adres alanı boş bırakılamaz.")]
-        public string Address { get; set; } = null!;
+        [Required(ErrorMessage = "Adres zorunludur.")]
+        [Display(Name = "Adres")]
+        public string Address { get; set; }
 
-        public string? WorkingHours { get; set; }
+       // [Required(ErrorMessage = "Çalışma saatleri zorunludur.")]
+        [Display(Name = "Çalışma Saatleri")]
+        public string WorkingHours { get; set; } // Örn: "09:00-22:00"
 
-        // İlişkiler
-        public virtual ICollection<Trainer>? Trainers { get; set; }
+        public virtual ICollection<Trainer> Trainers { get; set; } = new List<Trainer>();
+        
+        public virtual ICollection<GymService> GymServices { get; set; } = new List<GymService>();
     }
 }

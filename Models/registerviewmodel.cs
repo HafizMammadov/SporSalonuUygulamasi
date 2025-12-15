@@ -19,7 +19,7 @@ namespace SporSalonuUygulamasi.Models
 
         [Required(ErrorMessage = "Şifre alanı zorunludur.")]
         // Şifrenin minimum uzunluk kısıtlaması (Ödev gereksinimlerine göre en az 6-8 karakter önerilir)
-        [StringLength(100, ErrorMessage = "{0} en az {2} karakter uzunluğunda olmalıdır.", MinimumLength = 6)]
+        [StringLength(100, ErrorMessage = "{0} en az {2} karakter uzunlugunda olmalidir.", MinimumLength = 8)]
         [DataType(DataType.Password)]
         [Display(Name = "Şifre")]
         public string Password { get; set; }

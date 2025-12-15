@@ -1,51 +1,141 @@
-﻿@model SporSalonuUygulamasi.Models.Trainer
+﻿@model SporSalonuUygulamasi.Models.Gym
+
+@{
+    ViewData["Title"] = "Yeni Salon Ekle";
+    var serviceNames = ViewBag.ServiceNames as string[] ?? new string[0];
+    var hourlyRates = ViewBag.HourlyRates as decimal[] ?? new decimal[0];
+}
 
 <div class="container mt-4">
     <div class="row justify-content-center">
-        <div class="col-md-6">
+        <div class="col-md-8">
             <div class="card shadow">
-                <div class="card-header bg-danger text-white">
-                    <h4>Yeni Antrenör Ekle</h4>
+                <div class="card-header bg-success text-white">
+                    <h4><i class="bi bi-plus-circle"></i> Yeni Salon Ekle</h4>
                 </div>
                 <div class="card-body">
-                    <form asp-action="Create" method="post">
-
+                    <form asp-action="Create" method="post" id="gymForm">
+                        
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Çalışacağı Salon</label>
-                            <select asp-for="GymId" class="form-control" asp-items="ViewBag.GymList">
-                                <option value="">-- Bir Salon Seçiniz --</option>
-                            </select>
-                            <span asp-validation-for="GymId" class="text-danger small"></span>
+                            <label class="form-label fw-bold">Salon Adı <span class="text-danger">*</span></label>
+                            <input asp-for="Name" class="form-control" placeholder="Örn: FitLife Spor Salonu" required />
+                            <span asp-validation-for="Name" class="text-danger small"></span>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Uzmanlık Alanı (Hizmet)</label>
-                            <select asp-for="ServiceId" class="form-control" asp-items="ViewBag.ServiceList">
-                                <option value="">-- Bir Hizmet Seçiniz --</option>
-                            </select>
-                            <span asp-validation-for="ServiceId" class="text-danger small"></span>
+                            <label class="form-label fw-bold">Adres <span class="text-danger">*</span></label>
+                            <textarea asp-for="Address" class="form-control" rows="2" placeholder="Salon adresi" required></textarea>
+                            <span asp-validation-for="Address" class="text-danger small"></span>
                         </div>
+
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label class="form-label fw-bold">Açılış Saati <span class="text-danger">*</span></label>
+                                <input type="time" name="acilisSaati" class="form-control" value="@ViewBag.Acilis" required />
+                            </div>
+                            <div class="col">
+                                <label class="form-label fw-bold">Kapanış Saati <span class="text-danger">*</span></label>
+                                <input type="time" name="kapanisSaati" class="form-control" value="@ViewBag.Kapanis" required />
+                            </div>
+                        </div>
+                        <span asp-validation-for="WorkingHours" class="text-danger small"></span>
 
                         <hr />
 
                         <div class="mb-3">
-                            <label class="form-label">Ad Soyad</label>
-                            <input asp-for="FullName" class="form-control" placeholder="Örn: Ahmet Yılmaz" />
-                            <span asp-validation-for="FullName" class="text-danger small"></span>
+                            <label class="form-label fw-bold">Hizmetler <span class="text-danger">*</span></label>
+                            <small class="text-muted d-block mb-2">En az bir hizmet eklemelisiniz.</small>
+                            
+                            <div id="servicesContainer">
+                                <!-- İlk hizmet satırı -->
+                                <div class="row mb-2 service-row">
+                                    <div class="col-md-6">
+                                        <input type="text" name="serviceNames" class="form-control" placeholder="Hizmet adı (Örn: Fitness)" required />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="input-group">
+                                            <input type="number" name="hourlyRates" class="form-control" placeholder="Saatlik ücret" step="0.01" min="0.01" required />
+                                            <span class="input-group-text">₺/saat</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="button" class="btn btn-danger btn-remove-service" onclick="removeService(this)" style="display:none;">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="addService()">
+                                <i class="bi bi-plus"></i> Hizmet Ekle
+                            </button>
+                            
+                            @if (ViewBag.ServiceError != null)
+                            {
+                                <div class="text-danger small mt-1">@ViewBag.ServiceError</div>
+                            }
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Ekstra Uzmanlık Bilgisi</label>
-                            <input asp-for="ExpertiseArea" class="form-control" placeholder="Örn: Beslenme Uzmanı, 3. Kademe Antrenör" />
-                        </div>
+                        <hr />
 
-                        <button type="submit" class="btn btn-danger w-100">Kaydet</button>
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> İptal
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Tamam
+                            </button>
+                        </div>
                     </form>
                 </div>
-            </div>
-            <div class="text-center mt-2">
-                <a asp-action="Index">Listeye Dön</a>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        function addService() {
+            var container = document.getElementById('servicesContainer');
+            var newRow = document.createElement('div');
+            newRow.className = 'row mb-2 service-row';
+            newRow.innerHTML = `
+                <div class="col-md-6">
+                    <input type="text" name="serviceNames" class="form-control" placeholder="Hizmet adı" required />
+                </div>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <input type="number" name="hourlyRates" class="form-control" placeholder="Saatlik ücret" step="0.01" min="0.01" required />
+                        <span class="input-group-text">₺/saat</span>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-danger btn-remove-service" onclick="removeService(this)">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            `;
+            container.appendChild(newRow);
+            updateRemoveButtons();
+        }
+
+        function removeService(button) {
+            var row = button.closest('.service-row');
+            row.remove();
+            updateRemoveButtons();
+        }
+
+        function updateRemoveButtons() {
+            var rows = document.querySelectorAll('.service-row');
+            rows.forEach(function(row, index) {
+                var removeBtn = row.querySelector('.btn-remove-service');
+                if (removeBtn) {
+                    removeBtn.style.display = rows.length > 1 ? 'block' : 'none';
+                }
+            });
+        }
+
+        // Sayfa yüklendiğinde butonları güncelle
+        document.addEventListener('DOMContentLoaded', updateRemoveButtons);
+    </script>
+}

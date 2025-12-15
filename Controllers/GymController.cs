@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SporSalonuUygulamasi.Data;
 using SporSalonuUygulamasi.Models;
 using System.Linq;
 
 namespace SporSalonuUygulamasi.Controllers
 {
+    [Authorize]
     public class GymController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -14,24 +17,30 @@ namespace SporSalonuUygulamasi.Controllers
             _context = context;
         }
 
-        // LİSTELEME
+        // Ana menü sayfası
         public IActionResult Index()
         {
-            return View(_context.Gyms.ToList());
+            return View();
         }
 
-        // EKLEME SAYFASI (GET)
+        // Salonları listele
+        public IActionResult List()
+        {
+            var gyms = _context.Gyms.Include(g => g.GymServices).ToList();
+            return View(gyms);
+        }
+
         [HttpGet]
         public IActionResult Create()
         {
             return View();
         }
 
-        // EKLEME İŞLEMİ (POST)
         [HttpPost]
-        public IActionResult Create(Gym gym, string acilisSaati, string kapanisSaati)
+        public IActionResult Create(Gym gym, string acilisSaati, string kapanisSaati, 
+            string[] serviceNames, decimal[] hourlyRates)
         {
-            // 1. ZORUNLULUK KONTROLÜ
+            // Çalışma saatleri kontrolü
             if (string.IsNullOrEmpty(acilisSaati) || string.IsNullOrEmpty(kapanisSaati))
             {
                 ModelState.AddModelError("WorkingHours", "Lütfen açılış ve kapanış saatlerini giriniz!");
@@ -41,25 +50,54 @@ namespace SporSalonuUygulamasi.Controllers
                 gym.WorkingHours = $"{acilisSaati} - {kapanisSaati}";
             }
 
-            // 2. KAYIT
+            // En az 1 hizmet kontrolü
+            if (serviceNames == null || serviceNames.Length == 0 || 
+                serviceNames.All(s => string.IsNullOrWhiteSpace(s)))
+            {
+                ModelState.AddModelError("GymServices", "En az bir hizmet eklemelisiniz!");
+            }
+
             if (ModelState.IsValid)
             {
                 _context.Gyms.Add(gym);
                 _context.SaveChanges();
+
+                // Hizmetleri ekle
+                if (serviceNames != null)
+                {
+                    for (int i = 0; i < serviceNames.Length; i++)
+                    {
+                        if (!string.IsNullOrWhiteSpace(serviceNames[i]))
+                        {
+                            var gymService = new GymService
+                            {
+                                GymId = gym.GymId,
+                                ServiceName = serviceNames[i],
+                                HourlyRate = hourlyRates != null && i < hourlyRates.Length ? hourlyRates[i] : 0
+                            };
+                            _context.GymServices.Add(gymService);
+                        }
+                    }
+                    _context.SaveChanges();
+                }
+
                 return RedirectToAction("Index");
             }
 
+            ViewBag.Acilis = acilisSaati;
+            ViewBag.Kapanis = kapanisSaati;
+            ViewBag.ServiceNames = serviceNames;
+            ViewBag.HourlyRates = hourlyRates;
+
             return View(gym);
         }
-        // DÜZENLEME SAYFASI (GET)
+
         [HttpGet]
         public IActionResult Edit(int id)
         {
-            var gym = _context.Gyms.Find(id);
+            var gym = _context.Gyms.Include(g => g.GymServices).FirstOrDefault(g => g.GymId == id);
             if (gym == null) return NotFound();
 
-            // Veritabanındaki "09:00 - 22:00" formatını parçalayıp View'a gönderelim
-            // Böylece kutucuklar dolu gelir.
             if (!string.IsNullOrEmpty(gym.WorkingHours) && gym.WorkingHours.Contains("-"))
             {
                 var saatler = gym.WorkingHours.Split('-');
@@ -70,11 +108,13 @@ namespace SporSalonuUygulamasi.Controllers
             return View(gym);
         }
 
-        // DÜZENLEME İŞLEMİ (POST)
         [HttpPost]
-        public IActionResult Edit(Gym gym, string acilisSaati, string kapanisSaati)
+        public IActionResult Edit(int gymId, Gym gym, string acilisSaati, string kapanisSaati,
+            string[] serviceNames, decimal[] hourlyRates, int[] serviceIds)
         {
-            // 1. ZORUNLULUK KONTROLÜ
+            gym.GymId = gymId;
+            
+            // Çalışma saatleri kontrolü
             if (string.IsNullOrEmpty(acilisSaati) || string.IsNullOrEmpty(kapanisSaati))
             {
                 ModelState.AddModelError("WorkingHours", "Lütfen açılış ve kapanış saatlerini giriniz!");
@@ -84,40 +124,65 @@ namespace SporSalonuUygulamasi.Controllers
                 gym.WorkingHours = $"{acilisSaati} - {kapanisSaati}";
             }
 
-            // 2. GÜNCELLEME
+            // En az 1 hizmet kontrolü
+            if (serviceNames == null || serviceNames.Length == 0 || 
+                serviceNames.All(s => string.IsNullOrWhiteSpace(s)))
+            {
+                ModelState.AddModelError("GymServices", "En az bir hizmet eklemelisiniz!");
+            }
+
             if (ModelState.IsValid)
             {
                 _context.Gyms.Update(gym);
                 _context.SaveChanges();
+
+                // Mevcut hizmetleri sil
+                var existingServices = _context.GymServices.Where(gs => gs.GymId == gymId).ToList();
+                _context.GymServices.RemoveRange(existingServices);
+
+                // Yeni hizmetleri ekle
+                if (serviceNames != null)
+                {
+                    for (int i = 0; i < serviceNames.Length; i++)
+                    {
+                        if (!string.IsNullOrWhiteSpace(serviceNames[i]))
+                        {
+                            var gymService = new GymService
+                            {
+                                GymId = gymId,
+                                ServiceName = serviceNames[i],
+                                HourlyRate = hourlyRates != null && i < hourlyRates.Length ? hourlyRates[i] : 0
+                            };
+                            _context.GymServices.Add(gymService);
+                        }
+                    }
+                }
+                _context.SaveChanges();
+
                 return RedirectToAction("Index");
             }
 
-            // Hata olursa kutucuklar boş kalmasın diye geri dolduruyoruz
             ViewBag.Acilis = acilisSaati;
             ViewBag.Kapanis = kapanisSaati;
+            
+            // Hizmetleri tekrar yükle
+            gym.GymServices = _context.GymServices.Where(gs => gs.GymId == gymId).ToList();
 
             return View(gym);
         }
-        // SİLME SAYFASI
-        [HttpGet]
+
+        [HttpPost]
         public IActionResult Delete(int id)
         {
-            var gym = _context.Gyms.Find(id);
-            if (gym == null) return NotFound();
-            return View(gym);
-        }
-
-        // SİLME ONAYI
-        [HttpPost, ActionName("Delete")]
-        public IActionResult DeleteConfirmed(int id)
-        {
-            var gym = _context.Gyms.Find(id);
+            var gym = _context.Gyms.Include(g => g.GymServices).FirstOrDefault(g => g.GymId == id);
             if (gym != null)
             {
+                // Önce ilişkili hizmetleri sil
+                _context.GymServices.RemoveRange(gym.GymServices);
                 _context.Gyms.Remove(gym);
                 _context.SaveChanges();
             }
-            return RedirectToAction("Index");
+            return RedirectToAction("List");
         }
     }
 }

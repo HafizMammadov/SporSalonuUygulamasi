@@ -1,18 +1,18 @@
-﻿@model SporSalonuUygulamasi.Models.Trainer
+@model SporSalonuUygulamasi.Models.Trainer
 
 @{
-    ViewData["Title"] = "Yeni Eğitmen Ekle";
+    ViewData["Title"] = "Eğitmeni Düzenle";
 }
 
 <div class="container mt-4">
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card shadow">
-                <div class="card-header bg-success text-white">
-                    <h4><i class="bi bi-plus-circle"></i> Yeni Eğitmen Ekle</h4>
+                <div class="card-header bg-warning text-dark">
+                    <h4><i class="bi bi-pencil"></i> Eğitmeni Düzenle</h4>
                 </div>
                 <div class="card-body">
-                    <form asp-action="Create" method="post">
+                    <form asp-action="Edit" asp-route-id="@Model.TrainerId" method="post">
                         
                         <div class="mb-3">
                             <label class="form-label fw-bold">Çalışacağı Salon <span class="text-danger">*</span></label>
@@ -27,26 +27,26 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Ad <span class="text-danger">*</span></label>
-                                <input asp-for="FirstName" class="form-control" placeholder="Örn: Ahmet" required />
+                                <input asp-for="FirstName" class="form-control" required />
                                 <span asp-validation-for="FirstName" class="text-danger small"></span>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Soyad <span class="text-danger">*</span></label>
-                                <input asp-for="LastName" class="form-control" placeholder="Örn: Yılmaz" required />
+                                <input asp-for="LastName" class="form-control" required />
                                 <span asp-validation-for="LastName" class="text-danger small"></span>
                             </div>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Uzmanlık Alanı <span class="text-danger">*</span></label>
-                            <input asp-for="ExpertiseArea" class="form-control" placeholder="Örn: Fitness, Pilates, Yoga" required />
+                            <input asp-for="ExpertiseArea" class="form-control" required />
                             <span asp-validation-for="ExpertiseArea" class="text-danger small"></span>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Saatlik Ücret (₺) <span class="text-danger">*</span></label>
                             <div class="input-group">
-                                <input asp-for="HourlyRate" type="number" class="form-control" step="0.01" min="0.01" placeholder="Örn: 150" required />
+                                <input asp-for="HourlyRate" type="number" class="form-control" step="0.01" min="0.01" required />
                                 <span class="input-group-text">₺/saat</span>
                             </div>
                             <span asp-validation-for="HourlyRate" class="text-danger small"></span>
@@ -66,7 +66,7 @@
 
                         <div class="mb-3">
                             <div class="form-check">
-                                <input asp-for="IsAvailable" class="form-check-input" type="checkbox" checked />
+                                <input asp-for="IsAvailable" class="form-check-input" type="checkbox" />
                                 <label asp-for="IsAvailable" class="form-check-label fw-bold">
                                     Müsait (Randevu alınabilir)
                                 </label>
@@ -79,7 +79,7 @@
                             <a asp-action="Index" class="btn btn-secondary">
                                 <i class="bi bi-x-circle"></i> İptal
                             </a>
-                            <button type="submit" class="btn btn-success">
+                            <button type="submit" class="btn btn-warning">
                                 <i class="bi bi-check-circle"></i> Tamam
                             </button>
                         </div>
