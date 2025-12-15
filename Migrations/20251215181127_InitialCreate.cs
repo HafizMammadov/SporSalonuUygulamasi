@@ -30,6 +30,7 @@ namespace SporSalonuUygulamasi.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Discriminator = table.Column<string>(type: "nvarchar(13)", maxLength: 13, nullable: false),
                     FirstName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LastName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     BirthDate = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -62,11 +63,26 @@ namespace SporSalonuUygulamasi.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    WorkingHours = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    WorkingHours = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Gyms", x => x.GymId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Services",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Services", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -176,13 +192,35 @@ namespace SporSalonuUygulamasi.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Trainers",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Specialization = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    HourlyRate = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    GymId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Trainers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Trainers_Gyms_GymId",
+                        column: x => x.GymId,
+                        principalTable: "Gyms",
+                        principalColumn: "GymId");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "GymServices",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     GymId = table.Column<int>(type: "int", nullable: false),
-                    ServiceName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ServiceId = table.Column<int>(type: "int", nullable: false),
                     HourlyRate = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
                 },
                 constraints: table =>
@@ -194,63 +232,62 @@ namespace SporSalonuUygulamasi.Migrations
                         principalTable: "Gyms",
                         principalColumn: "GymId",
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Services",
-                columns: table => new
-                {
-                    ServiceId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    DurationMinutes = table.Column<int>(type: "int", nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    GymId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Services", x => x.ServiceId);
                     table.ForeignKey(
-                        name: "FK_Services_Gyms_GymId",
-                        column: x => x.GymId,
-                        principalTable: "Gyms",
-                        principalColumn: "GymId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Trainers",
-                columns: table => new
-                {
-                    TrainerId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ExpertiseArea = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    HourlyRate = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    WorkingHours = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IsAvailable = table.Column<bool>(type: "bit", nullable: false),
-                    PhotoUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    GymId = table.Column<int>(type: "int", nullable: false),
-                    ServiceId = table.Column<int>(type: "int", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Trainers", x => x.TrainerId);
-                    table.ForeignKey(
-                        name: "FK_Trainers_Gyms_GymId",
-                        column: x => x.GymId,
-                        principalTable: "Gyms",
-                        principalColumn: "GymId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Trainers_Services_ServiceId",
+                        name: "FK_GymServices_Services_ServiceId",
                         column: x => x.ServiceId,
                         principalTable: "Services",
-                        principalColumn: "ServiceId");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateTable(
+                name: "Appointments",
+                columns: table => new
+                {
+                    AppointmentId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    AppointmentDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsConfirmed = table.Column<bool>(type: "bit", nullable: false),
+                    AppUserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    TrainerId = table.Column<int>(type: "int", nullable: false),
+                    ServiceId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Appointments", x => x.AppointmentId);
+                    table.ForeignKey(
+                        name: "FK_Appointments_AspNetUsers_AppUserId",
+                        column: x => x.AppUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Appointments_Services_ServiceId",
+                        column: x => x.ServiceId,
+                        principalTable: "Services",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Appointments_Trainers_TrainerId",
+                        column: x => x.TrainerId,
+                        principalTable: "Trainers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Appointments_AppUserId",
+                table: "Appointments",
+                column: "AppUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Appointments_ServiceId",
+                table: "Appointments",
+                column: "ServiceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Appointments_TrainerId",
+                table: "Appointments",
+                column: "TrainerId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
@@ -297,24 +334,22 @@ namespace SporSalonuUygulamasi.Migrations
                 column: "GymId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Services_GymId",
-                table: "Services",
-                column: "GymId");
+                name: "IX_GymServices_ServiceId",
+                table: "GymServices",
+                column: "ServiceId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Trainers_GymId",
                 table: "Trainers",
                 column: "GymId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Trainers_ServiceId",
-                table: "Trainers",
-                column: "ServiceId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "Appointments");
+
             migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
 

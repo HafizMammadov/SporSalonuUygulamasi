@@ -1,14 +1,13 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SporSalonuUygulamasi.Data;
 using SporSalonuUygulamasi.Models;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace SporSalonuUygulamasi.Controllers
 {
-    [Authorize]
     public class TrainerController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -18,110 +17,112 @@ namespace SporSalonuUygulamasi.Controllers
             _context = context;
         }
 
-        // Ana menü sayfası
-        public IActionResult Index()
+        // LİSTELEME
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var trainers = _context.Trainers.Include(t => t.Gym);
+            return View(await trainers.ToListAsync());
         }
 
-        // Eğitmenleri listele
-        public IActionResult List()
+        // DETAYLAR
+        public async Task<IActionResult> Details(int? id)
         {
-            var trainers = _context.Trainers.Include(t => t.Gym).ToList();
-            return View(trainers);
-        }
+            if (id == null) return NotFound();
 
-        [HttpGet]
-        public IActionResult Create()
-        {
-            ViewBag.GymList = new SelectList(_context.Gyms.ToList(), "GymId", "Name");
-            return View();
-        }
+            var trainer = await _context.Trainers
+                .Include(t => t.Gym)
+                .FirstOrDefaultAsync(m => m.Id == id);
 
-        [HttpPost]
-        public IActionResult Create(Trainer trainer, string acilisSaati, string kapanisSaati)
-        {
-            // Çalışma saatleri kontrolü
-            if (string.IsNullOrEmpty(acilisSaati) || string.IsNullOrEmpty(kapanisSaati))
-            {
-                ModelState.AddModelError("WorkingHours", "Lütfen çalışma saatlerini giriniz!");
-            }
-            else
-            {
-                trainer.WorkingHours = $"{acilisSaati} - {kapanisSaati}";
-            }
-
-            if (ModelState.IsValid)
-            {
-                _context.Trainers.Add(trainer);
-                _context.SaveChanges();
-                return RedirectToAction("Index");
-            }
-
-            ViewBag.GymList = new SelectList(_context.Gyms.ToList(), "GymId", "Name", trainer.GymId);
-            ViewBag.Acilis = acilisSaati;
-            ViewBag.Kapanis = kapanisSaati;
-            return View(trainer);
-        }
-
-        [HttpGet]
-        public IActionResult Edit(int id)
-        {
-            var trainer = _context.Trainers.Find(id);
             if (trainer == null) return NotFound();
 
-            ViewBag.GymList = new SelectList(_context.Gyms.ToList(), "GymId", "Name", trainer.GymId);
-
-            if (!string.IsNullOrEmpty(trainer.WorkingHours) && trainer.WorkingHours.Contains("-"))
-            {
-                var saatler = trainer.WorkingHours.Split('-');
-                ViewBag.Acilis = saatler[0].Trim();
-                ViewBag.Kapanis = saatler[1].Trim();
-            }
-
             return View(trainer);
         }
 
-        [HttpPost]
-        public IActionResult Edit(int id, Trainer trainer, string acilisSaati, string kapanisSaati)
+        // EKLEME SAYFASI (GET)
+        public IActionResult Create()
         {
-            trainer.TrainerId = id;
-            
-            // Çalışma saatleri kontrolü
-            if (string.IsNullOrEmpty(acilisSaati) || string.IsNullOrEmpty(kapanisSaati))
+            ViewData["GymId"] = new SelectList(_context.Gyms, "Id", "Name");
+            return View();
+        }
+
+        // EKLEME İŞLEMİ (POST)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([Bind("Id,FirstName,LastName,ExpertiseArea,WorkStart,WorkEnd,GymId")] Trainer trainer)
+        {
+            if (ModelState.IsValid)
             {
-                ModelState.AddModelError("WorkingHours", "Lütfen çalışma saatlerini giriniz!");
+                _context.Add(trainer);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
             }
-            else
-            {
-                trainer.WorkingHours = $"{acilisSaati} - {kapanisSaati}";
-            }
+            ViewData["GymId"] = new SelectList(_context.Gyms, "Id", "Name", trainer.GymId);
+            return View(trainer);
+        }
+
+        // DÜZENLEME SAYFASI (GET)
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var trainer = await _context.Trainers.FindAsync(id);
+            if (trainer == null) return NotFound();
+
+            ViewData["GymId"] = new SelectList(_context.Gyms, "Id", "Name", trainer.GymId);
+            return View(trainer);
+        }
+
+        // DÜZENLEME İŞLEMİ (POST)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("Id,FirstName,LastName,ExpertiseArea,WorkStart,WorkEnd,GymId")] Trainer trainer)
+        {
+            if (id != trainer.Id) return NotFound();
 
             if (ModelState.IsValid)
             {
-                _context.Trainers.Update(trainer);
-                _context.SaveChanges();
-                return RedirectToAction("Index");
+                try
+                {
+                    _context.Update(trainer);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!_context.Trainers.Any(e => e.Id == trainer.Id)) return NotFound();
+                    else throw;
+                }
+                return RedirectToAction(nameof(Index));
             }
+            ViewData["GymId"] = new SelectList(_context.Gyms, "Id", "Name", trainer.GymId);
+            return View(trainer);
+        }
 
-            ViewBag.GymList = new SelectList(_context.Gyms.ToList(), "GymId", "Name", trainer.GymId);
-            ViewBag.Acilis = acilisSaati;
-            ViewBag.Kapanis = kapanisSaati;
+        // SİLME SAYFASI (GET)
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var trainer = await _context.Trainers
+                .Include(t => t.Gym)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (trainer == null) return NotFound();
 
             return View(trainer);
         }
 
-        [HttpPost]
-        public IActionResult Delete(int id)
+        // SİLME İŞLEMİ (POST)
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var trainer = _context.Trainers.Find(id);
+            var trainer = await _context.Trainers.FindAsync(id);
             if (trainer != null)
             {
                 _context.Trainers.Remove(trainer);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
-            return RedirectToAction("List");
+            return RedirectToAction(nameof(Index));
         }
     }
 }
-

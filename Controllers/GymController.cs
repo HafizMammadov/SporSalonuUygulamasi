@@ -1,13 +1,15 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SporSalonuUygulamasi.Data;
 using SporSalonuUygulamasi.Models;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using SporSalonuUygulamasi.Utility;
 
 namespace SporSalonuUygulamasi.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = Roles.Admin)]
     public class GymController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -17,172 +19,103 @@ namespace SporSalonuUygulamasi.Controllers
             _context = context;
         }
 
-        // Ana menü sayfası
-        public IActionResult Index()
+        // 1. LİSTELEME - [ActionName("List")] SİLİNDİ!
+        public async Task<IActionResult> Index()
         {
-            return View();
+            // View dosyasının adını kesin olarak belirtmeye gerek kalmadı
+            // Çünkü artık Views/Gym/Index.cshtml dosyasının içeriği doğru
+            return View(await _context.Gyms.ToListAsync());
         }
 
-        // Salonları listele
-        public IActionResult List()
+        // ... Diğer metotlar (Details, Create, Edit, Delete) aynı kalacak ...
+
+        // 2. DETAYLAR
+        public async Task<IActionResult> Details(int? id)
         {
-            var gyms = _context.Gyms.Include(g => g.GymServices).ToList();
-            return View(gyms);
+            if (id == null) return NotFound();
+            var gym = await _context.Gyms.FirstOrDefaultAsync(m => m.Id == id);
+            if (gym == null) return NotFound();
+            return View(gym);
         }
 
-        [HttpGet]
+        // 3. OLUŞTURMA (GET)
         public IActionResult Create()
         {
             return View();
         }
 
+        // 4. OLUŞTURMA (POST)
         [HttpPost]
-        public IActionResult Create(Gym gym, string acilisSaati, string kapanisSaati, 
-            string[] serviceNames, decimal[] hourlyRates)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([Bind("Id,Name,Address,WorkingHours")] Gym gym)
         {
-            // Çalışma saatleri kontrolü
-            if (string.IsNullOrEmpty(acilisSaati) || string.IsNullOrEmpty(kapanisSaati))
-            {
-                ModelState.AddModelError("WorkingHours", "Lütfen açılış ve kapanış saatlerini giriniz!");
-            }
-            else
-            {
-                gym.WorkingHours = $"{acilisSaati} - {kapanisSaati}";
-            }
-
-            // En az 1 hizmet kontrolü
-            if (serviceNames == null || serviceNames.Length == 0 || 
-                serviceNames.All(s => string.IsNullOrWhiteSpace(s)))
-            {
-                ModelState.AddModelError("GymServices", "En az bir hizmet eklemelisiniz!");
-            }
-
             if (ModelState.IsValid)
             {
-                _context.Gyms.Add(gym);
-                _context.SaveChanges();
-
-                // Hizmetleri ekle
-                if (serviceNames != null)
-                {
-                    for (int i = 0; i < serviceNames.Length; i++)
-                    {
-                        if (!string.IsNullOrWhiteSpace(serviceNames[i]))
-                        {
-                            var gymService = new GymService
-                            {
-                                GymId = gym.GymId,
-                                ServiceName = serviceNames[i],
-                                HourlyRate = hourlyRates != null && i < hourlyRates.Length ? hourlyRates[i] : 0
-                            };
-                            _context.GymServices.Add(gymService);
-                        }
-                    }
-                    _context.SaveChanges();
-                }
-
-                return RedirectToAction("Index");
+                _context.Add(gym);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
             }
-
-            ViewBag.Acilis = acilisSaati;
-            ViewBag.Kapanis = kapanisSaati;
-            ViewBag.ServiceNames = serviceNames;
-            ViewBag.HourlyRates = hourlyRates;
-
             return View(gym);
         }
 
-        [HttpGet]
-        public IActionResult Edit(int id)
+        // 5. DÜZENLEME (GET)
+        public async Task<IActionResult> Edit(int? id)
         {
-            var gym = _context.Gyms.Include(g => g.GymServices).FirstOrDefault(g => g.GymId == id);
+            if (id == null) return NotFound();
+            var gym = await _context.Gyms.FindAsync(id);
             if (gym == null) return NotFound();
-
-            if (!string.IsNullOrEmpty(gym.WorkingHours) && gym.WorkingHours.Contains("-"))
-            {
-                var saatler = gym.WorkingHours.Split('-');
-                ViewBag.Acilis = saatler[0].Trim();
-                ViewBag.Kapanis = saatler[1].Trim();
-            }
-
             return View(gym);
         }
 
+        // 6. DÜZENLEME (POST)
         [HttpPost]
-        public IActionResult Edit(int gymId, Gym gym, string acilisSaati, string kapanisSaati,
-            string[] serviceNames, decimal[] hourlyRates, int[] serviceIds)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Address,WorkingHours")] Gym gym)
         {
-            gym.GymId = gymId;
-            
-            // Çalışma saatleri kontrolü
-            if (string.IsNullOrEmpty(acilisSaati) || string.IsNullOrEmpty(kapanisSaati))
-            {
-                ModelState.AddModelError("WorkingHours", "Lütfen açılış ve kapanış saatlerini giriniz!");
-            }
-            else
-            {
-                gym.WorkingHours = $"{acilisSaati} - {kapanisSaati}";
-            }
-
-            // En az 1 hizmet kontrolü
-            if (serviceNames == null || serviceNames.Length == 0 || 
-                serviceNames.All(s => string.IsNullOrWhiteSpace(s)))
-            {
-                ModelState.AddModelError("GymServices", "En az bir hizmet eklemelisiniz!");
-            }
-
+            if (id != gym.Id) return NotFound();
             if (ModelState.IsValid)
             {
-                _context.Gyms.Update(gym);
-                _context.SaveChanges();
-
-                // Mevcut hizmetleri sil
-                var existingServices = _context.GymServices.Where(gs => gs.GymId == gymId).ToList();
-                _context.GymServices.RemoveRange(existingServices);
-
-                // Yeni hizmetleri ekle
-                if (serviceNames != null)
+                try
                 {
-                    for (int i = 0; i < serviceNames.Length; i++)
-                    {
-                        if (!string.IsNullOrWhiteSpace(serviceNames[i]))
-                        {
-                            var gymService = new GymService
-                            {
-                                GymId = gymId,
-                                ServiceName = serviceNames[i],
-                                HourlyRate = hourlyRates != null && i < hourlyRates.Length ? hourlyRates[i] : 0
-                            };
-                            _context.GymServices.Add(gymService);
-                        }
-                    }
+                    _context.Update(gym);
+                    await _context.SaveChangesAsync();
                 }
-                _context.SaveChanges();
-
-                return RedirectToAction("Index");
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!GymExists(gym.Id)) return NotFound();
+                    else throw;
+                }
+                return RedirectToAction(nameof(Index));
             }
-
-            ViewBag.Acilis = acilisSaati;
-            ViewBag.Kapanis = kapanisSaati;
-            
-            // Hizmetleri tekrar yükle
-            gym.GymServices = _context.GymServices.Where(gs => gs.GymId == gymId).ToList();
-
             return View(gym);
         }
 
-        [HttpPost]
-        public IActionResult Delete(int id)
+        // 7. SİLME (GET)
+        public async Task<IActionResult> Delete(int? id)
         {
-            var gym = _context.Gyms.Include(g => g.GymServices).FirstOrDefault(g => g.GymId == id);
+            if (id == null) return NotFound();
+            var gym = await _context.Gyms.FirstOrDefaultAsync(m => m.Id == id);
+            if (gym == null) return NotFound();
+            return View(gym);
+        }
+
+        // 8. SİLME (POST)
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var gym = await _context.Gyms.FindAsync(id);
             if (gym != null)
             {
-                // Önce ilişkili hizmetleri sil
-                _context.GymServices.RemoveRange(gym.GymServices);
                 _context.Gyms.Remove(gym);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
-            return RedirectToAction("List");
+            return RedirectToAction(nameof(Index));
+        }
+
+        private bool GymExists(int id)
+        {
+            return _context.Gyms.Any(e => e.Id == id);
         }
     }
 }

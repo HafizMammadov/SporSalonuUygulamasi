@@ -1,0 +1,100 @@
+﻿@model IEnumerable<SporSalonuUygulamasi.Models.Appointment>
+
+@{
+    ViewData["Title"] = "Randevularım";
+}
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>🏋️‍♂️ Randevularım</h2>
+        <a asp-action="Create" class="btn btn-primary">+ Yeni Randevu Al</a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info text-center p-5">
+            <h4>Henüz hiç randevunuz yok.</h4>
+            <p>Spor yapmaya başlamak için yukarıdaki butona tıklayın!</p>
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <table class="table table-striped table-hover mb-0 align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Tarih & Saat</th>
+                            <th>Hizmet</th>
+                            <th>Eğitmen</th>
+                            <th>Durum</th>
+                            <th style="width: 200px;">İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.AppointmentDate.ToString("dd MMMM yyyy - HH:mm")</td>
+
+                                <td>
+                                    @if (item.Service != null)
+                                    {
+                                        @item.Service.Name
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    @if (item.Trainer != null)
+                                    {
+                                        @item.Trainer.FirstName @item.Trainer.LastName
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Silinmiş</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    @if (item.IsConfirmed)
+                                    {
+                                        <span class="badge bg-success">Onaylandı</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark">Beklemede</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    @if (!item.IsConfirmed)
+                                    {
+                                        <div class="d-flex gap-2">
+                                            <a asp-action="Approve" asp-route-id="@item.Id" class="btn btn-success btn-sm">
+                                                ✔ Onayla
+                                            </a>
+
+                                            <form asp-action="Delete" asp-route-id="@item.Id" method="post" onsubmit="return confirm('Silmek istediğinize emin misiniz?');">
+                                                <button type="submit" class="btn btn-danger btn-sm">
+                                                    ✖ Reddet
+                                                </button>
+                                            </form>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted fst-italic"><small>Tamamlandı</small></span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>

@@ -1,50 +1,29 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SporSalonuUygulamasi.Models
 {
     public class Trainer
     {
-        [Key]
-        public int TrainerId { get; set; }
+        public int Id { get; set; }
 
-        [Required(ErrorMessage = "Ad zorunludur.")]
-        [Display(Name = "Ad")]
+        [Required(ErrorMessage = "Ad alanı zorunludur.")]
         public string FirstName { get; set; }
 
-        [Required(ErrorMessage = "Soyad zorunludur.")]
-        [Display(Name = "Soyad")]
+        [Required(ErrorMessage = "Soyad alanı zorunludur.")]
         public string LastName { get; set; }
 
-        [NotMapped]
-        [Display(Name = "Ad Soyad")]
-        public string FullName => $"{FirstName} {LastName}";
-
-        [Required(ErrorMessage = "Uzmanlık alanı zorunludur.")]
-        [Display(Name = "Uzmanlık Alanı")]
         public string ExpertiseArea { get; set; }
 
-        [Required(ErrorMessage = "Saatlik ücret zorunludur.")]
-        [Display(Name = "Saatlik Ücret (₺)")]
-        [Range(0.01, double.MaxValue, ErrorMessage = "Saatlik ücret 0'dan büyük olmalıdır.")]
-        public decimal HourlyRate { get; set; }
+        public TimeSpan WorkStart { get; set; } = new TimeSpan(9, 0, 0);
+        public TimeSpan WorkEnd { get; set; } = new TimeSpan(17, 0, 0);
 
-       // [Required(ErrorMessage = "Çalışma saatleri zorunludur.")]
-        [Display(Name = "Çalışma Saatleri")]
-        public string WorkingHours { get; set; }
-
-        [Display(Name = "Müsaitlik Durumu")]
-        public bool IsAvailable { get; set; } = true;
-
-        public string PhotoUrl { get; set; }
-
-        // --- İLİŞKİLER ---
-
-        [Required(ErrorMessage = "Spor salonu seçimi zorunludur.")]
-        [Display(Name = "Spor Salonu")]
-        public int GymId { get; set; }
+        // Salon Bağlantısı (Foreign Key)
+        [Display(Name = "Çalıştığı Salon")]
+        public int? GymId { get; set; }
 
         [ForeignKey("GymId")]
-        virtual public  Gym Gym { get; set; }
+        public Gym Gym { get; set; }
     }
 }

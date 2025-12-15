@@ -1,25 +1,29 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SporSalonuUygulamasi.Models
 {
     public class Appointment
     {
-        [Key]
-        public int AppointmentId { get; set; }
-
+        public int Id { get; set; }
         public DateTime AppointmentDate { get; set; }
 
-        public bool IsConfirmed { get; set; } = false;
+        // İlişkisel Özellikler (Foreign Keys)
 
-        // İlişkiler
-        public string AppUserId { get; set; } // ID null olabilir veya boş gelebilir
-        public virtual AppUser AppUser { get; set; } // SORU İŞARETİ EKLENDİ
+        // 1. Kullanıcı ID'si (Eksik Olan Kısım!)
+        public string UserId { get; set; }
+        [ForeignKey("UserId")]
+        public AppUser User { get; set; } // Hangi kullanıcı bu randevuyu aldı?
 
+        // 2. Eğitmen ID'si
         public int TrainerId { get; set; }
-        public virtual Trainer Trainer { get; set; } // SORU İŞARETİ EKLENDİ
+        [ForeignKey("TrainerId")]
+        public Trainer Trainer { get; set; }
 
+        // 3. Hizmet ID'si
         public int ServiceId { get; set; }
-        public virtual Service Service { get; set; } // SORU İŞARETİ EKLENDİ
+        [ForeignKey("ServiceId")]
+        public Service Service { get; set; }
+
+        public bool IsConfirmed { get; set; } = false; // Randevu Onay Durumu
     }
 }

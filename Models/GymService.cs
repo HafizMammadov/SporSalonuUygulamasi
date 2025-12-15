@@ -5,21 +5,18 @@ namespace SporSalonuUygulamasi.Models
 {
     public class GymService
     {
-        [Key]
         public int Id { get; set; }
 
         public int GymId { get; set; }
-
         [ForeignKey("GymId")]
-        public virtual Gym Gym { get; set; }
+        public Gym Gym { get; set; }
 
-        [Required(ErrorMessage = "Hizmet adı zorunludur.")]
-        [Display(Name = "Hizmet Adı")]
-        public string ServiceName { get; set; }
+        public int ServiceId { get; set; }
+        [ForeignKey("ServiceId")]
+        public Service Service { get; set; }
 
-        [Required(ErrorMessage = "Saatlik ücret zorunludur.")]
-        [Display(Name = "Saatlik Ücret (₺)")]
-        [Range(0.01, double.MaxValue, ErrorMessage = "Saatlik ücret 0'dan büyük olmalıdır.")]
+        // BU EKSİKTİ, BUNU EKLİYORUZ:
+        [Display(Name = "Saatlik Ücret")]
         public decimal HourlyRate { get; set; }
     }
 }

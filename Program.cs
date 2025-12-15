@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SporSalonuUygulamasi.Data;
 using SporSalonuUygulamasi.Models;
+using SporSalonuUygulamasi.Utility; // EKLENDÝ: Roles sýnýfýna eriþim için
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,13 +55,16 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Account}/{action=Login}/{id?}");
 
-// 5. ROL OLUSTURMA ve ILK ADMIN TANIMLAMA
+// ==========================================
+// 5. ROL OLUSTURMA ve ILK ADMIN TANIMLAMA (GÜNCELLENMÝÞ VE TEMÝZLENMÝÞ BLOK)
+// ==========================================
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
 
-    string[] roleNames = { "Admin", "Uye" };
+    // Rol adlarýný Utility sýnýfýndan alýyoruz. "Uye" yerine "User" kullanýldý.
+    string[] roleNames = { Roles.Admin, Roles.User };
     foreach (var roleName in roleNames)
     {
         if (!await roleManager.RoleExistsAsync(roleName))
@@ -69,9 +73,10 @@ using (var scope = app.Services.CreateScope())
         }
     }
 
-    string adminEmail = "ogrencinumarasi@sakarya.edu.tr";
-    string adminPassword = "sau";
-    string adminRole = "Admin";
+    // Admin kullanýcý bilgileri
+    string adminEmail = "admin@sakarya.edu.tr";
+    string adminPassword = "Hafýz1234"; // Lütfen bu þifreyi daha güvenli bir þeyle deðiþtirin!
+    string adminRole = Roles.Admin; // Utility sýnýfýndaki sabit kullanýldý.
 
     var adminUser = await userManager.FindByEmailAsync(adminEmail);
 

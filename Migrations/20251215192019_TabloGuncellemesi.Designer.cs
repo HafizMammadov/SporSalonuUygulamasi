@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SporSalonuUygulamasi.Data;
 
@@ -11,9 +12,11 @@ using SporSalonuUygulamasi.Data;
 namespace SporSalonuUygulamasi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251215192019_TabloGuncellemesi")]
+    partial class TabloGuncellemesi
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -231,11 +234,14 @@ namespace SporSalonuUygulamasi.Migrations
 
             modelBuilder.Entity("SporSalonuUygulamasi.Models.Appointment", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("AppointmentId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AppointmentId"));
+
+                    b.Property<string>("AppUserId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("AppointmentDate")
                         .HasColumnType("datetime2");
@@ -249,16 +255,13 @@ namespace SporSalonuUygulamasi.Migrations
                     b.Property<int>("TrainerId")
                         .HasColumnType("int");
 
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
+                    b.HasKey("AppointmentId");
 
-                    b.HasKey("Id");
+                    b.HasIndex("AppUserId");
 
                     b.HasIndex("ServiceId");
 
                     b.HasIndex("TrainerId");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Appointments");
                 });
@@ -417,6 +420,10 @@ namespace SporSalonuUygulamasi.Migrations
 
             modelBuilder.Entity("SporSalonuUygulamasi.Models.Appointment", b =>
                 {
+                    b.HasOne("SporSalonuUygulamasi.Models.AppUser", "AppUser")
+                        .WithMany()
+                        .HasForeignKey("AppUserId");
+
                     b.HasOne("SporSalonuUygulamasi.Models.Service", "Service")
                         .WithMany()
                         .HasForeignKey("ServiceId")
@@ -429,15 +436,11 @@ namespace SporSalonuUygulamasi.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SporSalonuUygulamasi.Models.AppUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
+                    b.Navigation("AppUser");
 
                     b.Navigation("Service");
 
                     b.Navigation("Trainer");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SporSalonuUygulamasi.Models.Trainer", b =>

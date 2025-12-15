@@ -1,25 +1,51 @@
-﻿@{
+﻿@model IEnumerable<SporSalonuUygulamasi.Models.Trainer>
+
+@{
     ViewData["Title"] = "Eğitmenler";
 }
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow-lg">
-                <div class="card-header bg-danger text-white text-center">
-                    <h3><i class="bi bi-person-badge"></i> Eğitmen Yönetimi</h3>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-3">
-                        <a asp-action="Create" class="btn btn-success btn-lg">
-                            <i class="bi bi-plus-circle"></i> Eğitmen Ekle
-                        </a>
-                        <a asp-action="List" class="btn btn-info btn-lg text-white">
-                            <i class="bi bi-list-ul"></i> Eğitmenleri Listele
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<h1>Eğitmenler Listesi</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Yeni Eğitmen Ekle</a>
+</p>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Ad</th>
+            <th>Soyad</th>
+            <th>Uzmanlık Alanı</th>
+            <th>Mesai Saatleri</th>
+            <th>Spor Salonu</th>
+            <th>İşlemler</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.FirstName)</td>
+                <td>@Html.DisplayFor(modelItem => item.LastName)</td>
+                <td>@Html.DisplayFor(modelItem => item.ExpertiseArea)</td>
+
+                <td>@item.WorkStart - @item.WorkEnd</td>
+
+                <td>
+                    @if (item.Gym != null)
+                    {
+                        @item.Gym.Name
+                    }
+                    else
+                    {
+                        <span class="text-muted">-Atanmamış-</span>
+                    }
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm">Düzenle</a>
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-sm">Detay</a>
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger btn-sm">Sil</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
