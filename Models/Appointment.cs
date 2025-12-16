@@ -19,8 +19,8 @@ namespace SporSalonuUygulamasi.Models
         [ForeignKey("TrainerId")]
         public Trainer Trainer { get; set; }
 
-        // 3. Hizmet ID'si
-        public int ServiceId { get; set; }
+        // 3. Hizmet ID'si (Opsiyonel yapıldı)
+        public int? ServiceId { get; set; }
         [ForeignKey("ServiceId")]
         public Service Service { get; set; }
 

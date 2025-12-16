@@ -107,8 +107,21 @@ namespace SporSalonuUygulamasi.Controllers
             var gym = await _context.Gyms.FindAsync(id);
             if (gym != null)
             {
-                _context.Gyms.Remove(gym);
-                await _context.SaveChangesAsync();
+                try
+                {
+                    _context.Gyms.Remove(gym);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateException)
+                {
+                    // İlişkili veri hatası (FK Constraint)
+                    ModelState.AddModelError("", "Bu salona kayıtlı eğitmenler veya işlemler olduğu için silinemez. Önce ilişkili kayıtları silmelisiniz.");
+                    return View("Delete", gym); // Hata mesajıyla birlikte silme sayfasına geri dön
+                    // Veya Index'e dönüp TempData ile mesaj gösterebiliriz ama View("Delete") daha açıklayıcı.
+                    // Ancak Index'te "Sil" butonu direkt POST yapıyor, bu yüzden View("Delete") demek, GET Delete sayfasına (onay sayfasına) gitmek demek değil, o view'i render etmek demek.
+                    // Kullanıcı "Sil" butonuna bastı (POST), hata aldı -> Delete.cshtml render edilecek.
+                    // Delete.cshtml silme onayı soran sayfadır. Orada ValidationSummary varsa hata görünür.
+                }
             }
             return RedirectToAction(nameof(Index));
         }

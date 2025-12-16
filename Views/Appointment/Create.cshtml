@@ -4,119 +4,144 @@
     ViewData["Title"] = "Randevu Al";
 }
 
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-
-<div class="container mt-4">
-    <h2>Randevu Oluştur</h2>
-    <hr />
-    <div class="row">
-        <div class="col-md-6">
-            <form asp-action="Create">
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-                <div class="form-group mb-3">
-                    <label asp-for="ServiceId" class="control-label">Hizmet Seçiniz</label>
-                    <select asp-for="ServiceId" class="form-control" asp-items="ViewBag.ServiceId">
-                        <option value="">-- Hizmet Seçin --</option>
-                    </select>
-                    <span asp-validation-for="ServiceId" class="text-danger"></span>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0 rounded-lg">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="text-center font-weight-light my-2"><i class="bi bi-calendar-plus"></i> Randevu Oluştur</h3>
                 </div>
+                <div class="card-body p-5">
+                    <form asp-action="Create" id="appointmentForm">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-                <div class="form-group mb-3">
-                    <label class="control-label">Eğitmen Seçiniz</label>
-                    <select asp-for="TrainerId" id="trainerSelect" class="form-control select2-box" asp-items="ViewBag.TrainerId">
-                        <option value="">-- Eğitmen Seçin --</option>
-                    </select>
-                    <span asp-validation-for="TrainerId" class="text-danger"></span>
+                        <!-- 1. Adım: Salon Seçimi -->
+                        <div class="form-floating mb-3">
+                            <select id="GymId" class="form-select" asp-items="ViewBag.GymId">
+                                <option value="">-- Bir Salon Seçiniz --</option>
+                            </select>
+                            <label for="GymId">Spor Salonu</label>
+                        </div>
+
+
+                        <!-- 3. Adım: Eğitmen Seçimi (Salona göre dolacak) -->
+                        <div class="form-floating mb-3">
+                            <select asp-for="TrainerId" class="form-select" disabled>
+                                <option value="">-- Önce Salon Seçiniz --</option>
+                            </select>
+                            <label asp-for="TrainerId">Eğitmen</label>
+                            <span asp-validation-for="TrainerId" class="text-danger"></span>
+                        </div>
+
+                        <!-- 4. Adım: Tarih Seçimi -->
+                        <div class="form-floating mb-3">
+                            <input type="date" id="datePicker" class="form-control" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                            <label for="datePicker">Randevu Tarihi</label>
+                        </div>
+
+                        <!-- 5. Adım: Saat Seçimi -->
+                        <div id="timeSlotsContainer" class="mb-4" style="display:none;">
+                            <label class="form-label fw-bold">Müsait Saatler:</label>
+                            <div id="slots" class="d-flex flex-wrap gap-2">
+                                <!-- Saat butonları buraya gelecek -->
+                            </div>
+                            <div id="noSlotsMessage" class="text-danger mt-2" style="display:none;">
+                                <i class="bi bi-exclamation-circle"></i> Seçilen tarihte bu eğitmen için uygun saat bulunmamaktadır.
+                            </div>
+                        </div>
+
+                        <!-- Gizli Input: Controller'a gidecek Tam Tarih (Date + Time) -->
+                        <input type="hidden" asp-for="AppointmentDate" />
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-success btn-lg" id="btnSubmit" disabled>
+                                <i class="bi bi-check-lg"></i> Randevuyu Onayla
+                            </button>
+                            <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">İptal</a>
+                        </div>
+                    </form>
                 </div>
-
-                <div class="form-group mb-3">
-                    <label class="control-label">Tarih Seçiniz</label>
-                    <input type="date" id="dateSelect" class="form-control" />
-                </div>
-
-                <div class="form-group mb-3">
-                    <label class="control-label">Saat Seçiniz</label>
-                    <select id="timeSelect" class="form-control" disabled>
-                        <option>Önce Eğitmen ve Tarih Seçiniz</option>
-                    </select>
-                </div>
-
-                <input type="hidden" asp-for="AppointmentDate" id="finalDateInput" />
-
-                <div class="form-group mt-4">
-                    <input type="submit" value="Randevuyu Onayla" class="btn btn-primary btn-lg" />
-
-                    <a asp-action="Index" class="btn btn-secondary btn-lg">İptal</a>
-
-                    <a asp-action="Index" class="btn btn-warning btn-lg text-white" style="margin-left: 10px;">📋 Randevu Listesi</a>
-                </div>
-
-            </form>
+            </div>
         </div>
     </div>
 </div>
 
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 
     <script>
-        $(document).ready(function() {
-            console.log("Sistem hazır!");
+        $(document).ready(function () {
+            var gymSelect = $('#GymId');
+            var trainerSelect = $('#TrainerId');
+            var datePicker = $('#datePicker');
+            var slotsContainer = $('#timeSlotsContainer');
+            var slotsDiv = $('#slots');
+            var noSlotsMsg = $('#noSlotsMessage');
+            var hiddenDateInput = $('#AppointmentDate');
+            var submitBtn = $('#btnSubmit');
 
-            // 1. Select2 Aktif Et
-            $('.select2-box').select2({
-                placeholder: "Seçim Yapınız",
-                allowClear: true,
-                width: '100%'
-            });
+            // 1. Salon Değiştiğinde Eğitmenleri Getir
+            gymSelect.change(function () {
+                var gymId = $(this).val();
+                
+                // Reset
+                trainerSelect.empty().append('<option value="">-- Eğitmen Seçiniz --</option>').prop('disabled', true);
+                resetTimeSlots();
 
-            // 2. Değişiklikleri Dinle
-            $('#trainerSelect, #dateSelect').change(function() {
-                var trainerId = $('#trainerSelect').val();
-                var selectedDate = $('#dateSelect').val();
-                var timeDropdown = $('#timeSelect');
-
-                if (trainerId && selectedDate) {
-                    timeDropdown.prop('disabled', true).html('<option>Hesaplanıyor...</option>');
-
-                    $.ajax({
-                        url: '/Appointment/GetAvailableHours',
-                        type: 'GET',
-                        data: { trainerId: trainerId, date: selectedDate },
-                        success: function(data) {
-                            timeDropdown.empty();
-                            if (data.length === 0) {
-                                timeDropdown.append('<option>Müsait saat yok!</option>');
-                            } else {
-                                timeDropdown.prop('disabled', false);
-                                timeDropdown.append('<option value="">-- Saat Seç --</option>');
-                                $.each(data, function(index, time) {
-                                    timeDropdown.append('<option value="' + time + '">' + time + '</option>');
-                                });
-                            }
-                        },
-                        error: function() {
-                            timeDropdown.html('<option>Saatler getirilemedi!</option>');
-                            timeDropdown.prop('disabled', false);
-                        }
+                if (gymId) {
+                    $.getJSON('/Appointment/GetTrainersByGym', { gymId: gymId }, function (data) {
+                        $.each(data, function (i, trainer) {
+                            trainerSelect.append('<option value="' + trainer.value + '">' + trainer.text + '</option>');
+                        });
+                        trainerSelect.prop('disabled', false);
                     });
                 }
             });
 
-            // 3. Tarih ve Saati Birleştirip Gizli Inputa Yaz
-            $('#timeSelect').change(function() {
-                var date = $('#dateSelect').val();
-                var time = $(this).val();
-                if(date && time) {
-                    $('#finalDateInput').val(date + 'T' + time);
+            // 2. Eğitmen veya Tarih Değiştiğinde Saatleri Getir
+            function loadAvailableHours() {
+                var trainerId = trainerSelect.val();
+                var date = datePicker.val();
+
+                resetTimeSlots();
+
+                if (trainerId && date) {
+                    $.getJSON('/Appointment/GetAvailableHours', { trainerId: trainerId, date: date }, function (times) {
+                        slotsContainer.show();
+                        if (times.length > 0) {
+                            noSlotsMsg.hide();
+                            $.each(times, function (index, time) {
+                                var btn = $('<button type="button" class="btn btn-outline-primary m-1 time-slot">' + time + '</button>');
+                                btn.click(function () {
+                                    // Seçim işlemi
+                                    $('.time-slot').removeClass('active btn-primary').addClass('btn-outline-primary');
+                                    $(this).removeClass('btn-outline-primary').addClass('active btn-primary');
+                                    
+                                    // Tarih ve Saati Birleştirip Gizli Inputa Yaz
+                                    var fullDateTime = date + 'T' + time;
+                                    hiddenDateInput.val(fullDateTime);
+                                    
+                                    // Butonu Aktif Et
+                                    submitBtn.prop('disabled', false);
+                                });
+                                slotsDiv.append(btn);
+                            });
+                        } else {
+                            noSlotsMsg.show();
+                        }
+                    });
                 }
-            });
+            }
+
+            trainerSelect.change(loadAvailableHours);
+            datePicker.change(loadAvailableHours);
+
+            function resetTimeSlots() {
+                slotsDiv.empty();
+                slotsContainer.hide();
+                hiddenDateInput.val('');
+                submitBtn.prop('disabled', true);
+            }
         });
     </script>
 }

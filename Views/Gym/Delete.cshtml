@@ -5,10 +5,11 @@
 }
 
 <h1>Sil</h1>
-<h3>Bu salonu silmek istediğine emin misin?</h3>
-
-<div>
-    <h4>Salon Bilgileri</h4>
+    <h3>Bu salonu silmek istediğine emin misin?</h3>
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    
+    <div>
+        <h4>Salon Bilgileri</h4>
     <hr />
     <dl class="row">
         <dt class="col-sm-2">@Html.DisplayNameFor(model => model.Name)</dt>

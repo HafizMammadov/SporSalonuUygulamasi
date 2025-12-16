@@ -31,13 +31,15 @@ namespace SporSalonuUygulamasi.Controllers
         [Authorize(Roles = "Admin")] // SADECE YÖNETİCİ TÜM LİSTEYİ GÖREBİLİR
         public async Task<IActionResult> Index()
         {
-            var appointments = _context.Appointments
+            var appointments = await _context.Appointments
                 .Include(a => a.Trainer)
                 .Include(a => a.Service)
                 .OrderByDescending(a => a.AppointmentDate)
-                .AsQueryable();
+                .ToListAsync();
 
-            return View(await appointments.ToListAsync());
+            ViewBag.Count = appointments.Count;
+
+            return View(appointments);
         }
 
         // ==========================================
@@ -46,17 +48,14 @@ namespace SporSalonuUygulamasi.Controllers
         [Authorize] // GİRİŞ YAPAN HERKES RANDEVU ALABİLİR
         public IActionResult Create()
         {
-            // Hizmetleri Doldur
-            ViewData["ServiceId"] = new SelectList(_context.Services, "Id", "Name");
+            // Salonları Doldur
+            ViewData["GymId"] = new SelectList(_context.Gyms, "Id", "Name");
 
-            // Eğitmenleri Doldur
-            var trainers = _context.Trainers.Select(t => new
-            {
-                Id = t.Id,
-                FullName = t.FirstName + " " + t.LastName
-            }).ToList();
+            // Hizmet seçimi kaldırıldı
+            // ViewData["ServiceId"] = ...
 
-            ViewData["TrainerId"] = new SelectList(trainers, "Id", "FullName");
+            // Eğitmenleri başlangıçta boş gönderiyoruz, Salon seçince dolacak
+            ViewData["TrainerId"] = new SelectList(new List<SelectListItem>(), "Value", "Text");
 
             return View();
         }
@@ -68,11 +67,27 @@ namespace SporSalonuUygulamasi.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         // KULLANICI ID'si modelde olmadığı için Bind'e eklenmedi. Manuel ekleyeceğiz.
-        public async Task<IActionResult> Create([Bind("Id,AppointmentDate,TrainerId,ServiceId")] Appointment appointment)
+        public async Task<IActionResult> Create([Bind("Id,AppointmentDate,TrainerId")] Appointment appointment)
         {
             // Oturum açan kullanıcının ID'sini alıyoruz
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            appointment.UserId = userId; // KRİTİK: Randevuyu alan kullanıcının ID'sini kaydettik.
+            appointment.UserId = userId; // KRİTİK
+
+            // Veritabanı Constraint Hatasını Çözmek İçin Varsayılan Hizmet Atama
+            // Kullanıcı arayüzünden seçim kaldırıldığı için, veritabanı 'Not Null' hatası veriyor.
+            // Bu yüzden arka planda otomatik olarak ilk hizmeti atıyoruz.
+            var defaultService = _context.Services.FirstOrDefault();
+            if (defaultService != null)
+            {
+                appointment.ServiceId = defaultService.Id;
+            }
+            else
+            {
+                // Eğer hiç hizmet yoksa, null hatası almamak için geçici bir çözüm gerekebilir
+                // Ancak sistemde en az bir hizmet olduğu varsayılıyor.
+                ModelState.AddModelError("", "Sistemde kayıtlı hizmet bulunamadı. Lütfen yönetici ile iletişime geçin.");
+                return View(appointment);
+            }
 
             if (ModelState.IsValid)
             {
@@ -85,7 +100,7 @@ namespace SporSalonuUygulamasi.Controllers
             }
 
             // Hata olursa listeleri tekrar doldur
-            ViewData["ServiceId"] = new SelectList(_context.Services, "Id", "Name", appointment.ServiceId);
+            // ViewData["ServiceId"] = ...
 
             var trainers = _context.Trainers.Select(t => new
             {
@@ -100,6 +115,9 @@ namespace SporSalonuUygulamasi.Controllers
 
         // ==========================================
         // 4. RANDEVUYU ONAYLA - SADECE YÖNETİCİ
+        // ==========================================
+        // ==========================================
+        // 4. RANDEVUYU ONAYLA (SADECE YÖNETİCİ)
         // ==========================================
         [Authorize(Roles = "Admin")] // SADECE YÖNETİCİ ONAYLAYABİLİR
         public async Task<IActionResult> Approve(int id)
@@ -116,6 +134,67 @@ namespace SporSalonuUygulamasi.Controllers
             await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
+        }
+
+        // ==========================================
+        // YENİ: RANDEVU DÜZENLE (GET) - SADECE YÖNETİCİ
+        // ==========================================
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var appointment = await _context.Appointments.FindAsync(id);
+            if (appointment == null) return NotFound();
+
+            // Hizmetleri Doldur
+            ViewData["ServiceId"] = new SelectList(_context.Services, "Id", "Name", appointment.ServiceId);
+
+            // Eğitmenleri Doldur
+            var trainers = _context.Trainers.Select(t => new
+            {
+                Id = t.Id,
+                FullName = t.FirstName + " " + t.LastName
+            }).ToList();
+            ViewData["TrainerId"] = new SelectList(trainers, "Id", "FullName", appointment.TrainerId);
+
+            return View(appointment);
+        }
+
+        // ==========================================
+        // YENİ: RANDEVU DÜZENLE (POST) - SADECE YÖNETİCİ
+        // ==========================================
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("Id,AppointmentDate,TrainerId,ServiceId,UserId,IsConfirmed")] Appointment appointment)
+        {
+            if (id != appointment.Id) return NotFound();
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(appointment);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!_context.Appointments.Any(e => e.Id == appointment.Id)) return NotFound();
+                    else throw;
+                }
+                return RedirectToAction(nameof(Index));
+            }
+
+            ViewData["ServiceId"] = new SelectList(_context.Services, "Id", "Name", appointment.ServiceId);
+            var trainers = _context.Trainers.Select(t => new
+            {
+                Id = t.Id,
+                FullName = t.FirstName + " " + t.LastName
+            }).ToList();
+            ViewData["TrainerId"] = new SelectList(trainers, "Id", "FullName", appointment.TrainerId);
+
+            return View(appointment);
         }
 
         // ==========================================
@@ -168,13 +247,40 @@ namespace SporSalonuUygulamasi.Controllers
         }
 
         // ==========================================
+        // YENİ: SALONA GÖRE EĞİTMENLERİ GETİR (AJAX)
+        // ==========================================
+        [HttpGet]
+        public JsonResult GetTrainersByGym(int gymId)
+        {
+            var trainers = _context.Trainers
+                .Where(t => t.GymId == gymId)
+                .Select(t => new
+                {
+                    value = t.Id,
+                    text = t.FirstName + " " + t.LastName + " (" + t.ExpertiseArea + ")"
+                })
+                .ToList();
+
+            return Json(trainers);
+        }
+
+        // ==========================================
         // 7. KULLANICININ KENDİ RANDEVULARI (ÜYE)
         // Bu sayfa, API'yi çağırarak veriyi çeker.
         // ==========================================
         [Authorize] // SADECE GİRİŞ YAPAN KULLANICILARA AÇIK
-        public IActionResult MyAppointments()
+        public async Task<IActionResult> MyAppointments()
         {
-            return View();
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var appointments = await _context.Appointments
+                .Include(a => a.Trainer)
+                .ThenInclude(t => t.Gym)
+                // .Include(a => a.Service) // Hizmet opsiyonel veya kaldırıldı
+                .Where(a => a.UserId == userId)
+                .OrderByDescending(a => a.AppointmentDate)
+                .ToListAsync();
+
+            return View(appointments);
         }
     }
 }
