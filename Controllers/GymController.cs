@@ -22,9 +22,9 @@ namespace SporSalonuUygulamasi.Controllers
         // 1. LİSTELEME - [ActionName("List")] SİLİNDİ!
         public async Task<IActionResult> Index()
         {
-            // View dosyasının adını kesin olarak belirtmeye gerek kalmadı
-            // Çünkü artık Views/Gym/Index.cshtml dosyasının içeriği doğru
-            return View(await _context.Gyms.ToListAsync());
+            var gyms = await _context.Gyms.ToListAsync();
+            ViewBag.Count = gyms.Count;
+            return View(gyms);
         }
 
         // ... Diğer metotlar (Details, Create, Edit, Delete) aynı kalacak ...

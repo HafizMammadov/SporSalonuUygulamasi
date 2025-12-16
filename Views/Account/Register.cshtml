@@ -1,4 +1,5 @@
-﻿@{
+﻿@model SporSalonuUygulamasi.Models.RegisterViewModel
+@{
     ViewData["Title"] = "Giriş ve Kayıt";
 }
 
@@ -8,76 +9,28 @@
 
             <ul class="nav nav-pills nav-justified mb-3" id="pills-tab" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active fw-bold" id="pills-login-tab" data-bs-toggle="pill" data-bs-target="#pills-login" type="button" role="tab" aria-controls="pills-login" aria-selected="true">Giriş Yap</button>
+                    <button class="nav-link fw-bold" id="pills-login-tab" data-bs-toggle="pill" data-bs-target="#pills-login" type="button" role="tab" aria-controls="pills-login" aria-selected="false">Giriş Yap</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link fw-bold" id="pills-register-tab" data-bs-toggle="pill" data-bs-target="#pills-register" type="button" role="tab" aria-controls="pills-register" aria-selected="false">Kayıt Ol</button>
+                    <button class="nav-link active fw-bold" id="pills-register-tab" data-bs-toggle="pill" data-bs-target="#pills-register" type="button" role="tab" aria-controls="pills-register" aria-selected="true">Kayıt Ol</button>
                 </li>
             </ul>
 
             <div class="tab-content" id="pills-tabContent">
 
-                <div class="tab-pane fade show active" id="pills-login" role="tabpanel" aria-labelledby="pills-login-tab">
-                    <div class="card shadow p-4 border-0">
-                        <h3 class="text-center text-primary mb-4">Hoş Geldiniz</h3>
-                        <form method="post" action="/Account/Login">
-                            <div class="mb-3">
-                                <label class="form-label">Email Adresi</label>
-                                <input type="email" name="Email" class="form-control" placeholder="ogrencinumarasi@sakarya.edu.tr" required />
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Şifre</label>
-                                <input type="password" name="Password" class="form-control" placeholder="sau" required />
-                            </div>
-                            <div class="mb-3 form-check">
-                                <input type="checkbox" class="form-check-input" id="rememberMe" name="RememberMe" value="true">
-                                <label class="form-check-label" for="rememberMe">Beni Hatırla</label>
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100 py-2">Giriş Yap</button>
-                        </form>
-
-                        <div class="alert alert-light border mt-3 text-center">
-                            <small class="text-muted">Admin: ogrencinumarasi@sakarya.edu.tr | Şifre: sau</small>
-                        </div>
-                    </div>
+                <div class="tab-pane fade" id="pills-login" role="tabpanel" aria-labelledby="pills-login-tab">
+                    <partial name="_LoginPartial" model="new SporSalonuUygulamasi.Models.LoginViewModel()" />
                 </div>
 
-                <div class="tab-pane fade" id="pills-register" role="tabpanel" aria-labelledby="pills-register-tab">
-                    <div class="card shadow p-4 border-0">
-                        <h3 class="text-center text-success mb-4">Yeni Hesap Oluştur</h3>
-                        <form method="post" action="/Account/Register">
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Ad</label>
-                                    <input type="text" name="Ad" class="form-control" required />
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Soyad</label>
-                                    <input type="text" name="Soyad" class="form-control" required />
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Email Adresi</label>
-                                <input type="email" name="Email" class="form-control" required />
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Şifre</label>
-                                <input type="password" name="Password" class="form-control" required />
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Şifre Tekrar</label>
-                                <input type="password" name="ConfirmPassword" class="form-control" required />
-                            </div>
-
-                            <button type="submit" class="btn btn-success w-100 py-2">Kayıt Ol</button>
-                        </form>
-                    </div>
+                <div class="tab-pane fade show active" id="pills-register" role="tabpanel" aria-labelledby="pills-register-tab">
+                    <partial name="_RegisterPartial" model="@(Model ?? new SporSalonuUygulamasi.Models.RegisterViewModel())" />
                 </div>
 
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

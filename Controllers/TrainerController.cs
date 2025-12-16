@@ -5,9 +5,12 @@ using SporSalonuUygulamasi.Data;
 using SporSalonuUygulamasi.Models;
 using System.Linq;
 using System.Threading.Tasks;
+using SporSalonuUygulamasi.Utility;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SporSalonuUygulamasi.Controllers
 {
+    [Authorize(Roles = Roles.Admin)]
     public class TrainerController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -20,8 +23,9 @@ namespace SporSalonuUygulamasi.Controllers
         // LİSTELEME
         public async Task<IActionResult> Index()
         {
-            var trainers = _context.Trainers.Include(t => t.Gym);
-            return View(await trainers.ToListAsync());
+            var trainers = await _context.Trainers.Include(t => t.Gym).ToListAsync();
+            ViewBag.Count = trainers.Count;
+            return View(trainers);
         }
 
         // DETAYLAR

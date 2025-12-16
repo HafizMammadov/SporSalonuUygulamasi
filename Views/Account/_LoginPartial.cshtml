@@ -1,0 +1,29 @@
+@model SporSalonuUygulamasi.Models.LoginViewModel
+
+<div class="card shadow p-4 border-0">
+    <h3 class="text-center text-primary mb-4">Hoş Geldiniz</h3>
+    
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <form asp-controller="Account" asp-action="Login" method="post">
+        <div class="mb-3">
+            <label asp-for="Email" class="form-label"></label>
+            <input asp-for="Email" class="form-control" placeholder="ogrencinumarasi@sakarya.edu.tr" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Password" class="form-label"></label>
+            <input asp-for="Password" class="form-control" placeholder="sau" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+        <div class="mb-3 form-check">
+            <input asp-for="RememberMe" class="form-check-input" />
+            <label asp-for="RememberMe" class="form-check-label"></label>
+        </div>
+        <button type="submit" class="btn btn-primary w-100 py-2">Giriş Yap</button>
+    </form>
+
+    <div class="alert alert-light border mt-3 text-center">
+        <small class="text-muted">Admin: ogrencinumarasi@sakarya.edu.tr | Şifre: sau</small>
+    </div>
+</div>
