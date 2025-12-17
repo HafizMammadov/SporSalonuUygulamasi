@@ -1,0 +1,21 @@
+@{
+    ViewData["Title"] = "Hoş Geldiniz";
+}
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-8 text-center">
+        <div class="card shadow-lg border-0 glass-effect">
+            <div class="card-body p-5">
+                <h1 class="display-4 text-primary fw-bold mb-4">Hoş Geldiniz!</h1>
+                <p class="lead mb-4">Spor salonu uygulamasına başarıyla giriş yaptınız.</p>
+                <hr class="my-4">
+                <p>Buradan randevularınızı yönetebilir, profilinizi güncelleyebilir ve salonumuz hakkında bilgi alabilirsiniz.</p>
+                
+                <div class="mt-4">
+                    <a asp-controller="Appointment" asp-action="Create" class="btn btn-primary btn-lg px-5 me-2 rounded-pill">Randevu Al</a>
+                    <a asp-controller="Appointment" asp-action="MyAppointments" class="btn btn-outline-secondary btn-lg px-5 rounded-pill">Randevularım</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

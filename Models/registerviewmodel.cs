@@ -5,19 +5,19 @@ namespace SporSalonuUygulamasi.Models
     // Yeni üye (kayıt) bilgileri için model
     public class RegisterViewModel
     {
-        [Required(ErrorMessage = "Ad alanı zorunludur.")]
+        [Required(ErrorMessage = "Bu bilgi zorunludur.")]
         [Display(Name = "Ad")]
         public string Ad { get; set; }
 
-        [Required(ErrorMessage = "Soyad alanı zorunludur.")]
+        [Required(ErrorMessage = "Bu bilgi zorunludur.")]
         [Display(Name = "Soyad")]
         public string Soyad { get; set; }
 
-        [Required(ErrorMessage = "E-posta alanı zorunludur.")]
+        [Required(ErrorMessage = "Bu bilgi zorunludur.")]
         [EmailAddress(ErrorMessage = "Lütfen geçerli bir E-posta adresi girin.")]
         public string Email { get; set; }
 
-        [Required(ErrorMessage = "Şifre alanı zorunludur.")]
+        [Required(ErrorMessage = "Bu bilgi zorunludur.")]
         // Şifrenin minimum uzunluk kısıtlaması (Ödev gereksinimlerine göre en az 6-8 karakter önerilir)
         [StringLength(100, ErrorMessage = "{0} en az {2} karakter uzunlugunda olmalidir.", MinimumLength = 8)]
         [DataType(DataType.Password)]

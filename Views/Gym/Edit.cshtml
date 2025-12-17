@@ -4,55 +4,91 @@
     ViewData["Title"] = "Salon Düzenle";
 }
 
-<div class="container mt-4">
+<div class="container mt-5">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow">
-                <div class="card-header bg-warning text-dark">
-                    <h4><i class="bi bi-pencil-square"></i> Salon Düzenle</h4>
+        <div class="col-lg-7">
+
+            <div class="card shadow border-0">
+                <!-- Header -->
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-pencil-square me-2"></i>
+                        Salon Bilgilerini Düzenle
+                    </h4>
                 </div>
-                <div class="card-body">
+
+                <!-- Body -->
+                <div class="card-body p-4">
                     <form asp-action="Edit" method="post" id="gymForm">
-                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger small"></div>
                         <input type="hidden" asp-for="Id" />
 
+                        <!-- Salon Adı -->
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Salon Adı <span class="text-danger">*</span></label>
-                            <input asp-for="Name" class="form-control" placeholder="Örn: FitLife Spor Salonu" required />
+                            <label asp-for="Name" class="form-label fw-semibold">
+                                Salon Adı
+                            </label>
+                            <input asp-for="Name"
+                                   class="form-control form-control-lg"
+                                   placeholder="Örn: FitLife Spor Salonu" />
                             <span asp-validation-for="Name" class="text-danger small"></span>
                         </div>
 
+                        <!-- Adres -->
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Adres <span class="text-danger">*</span></label>
-                            <textarea asp-for="Address" class="form-control" rows="2" placeholder="Salon adresi" required></textarea>
+                            <label asp-for="Address" class="form-label fw-semibold">
+                                Adres
+                            </label>
+                            <textarea asp-for="Address"
+                                      class="form-control"
+                                      rows="3"
+                                      placeholder="Salon adresini giriniz"></textarea>
                             <span asp-validation-for="Address" class="text-danger small"></span>
                         </div>
 
-                        <div class="mb-3">
-                             <label class="form-label fw-bold">Çalışma Saatleri <span class="text-danger">*</span></label>
-                             <input asp-for="WorkingHours" class="form-control" placeholder="Örn: 09:00 - 22:00" required />
-                             <span asp-validation-for="WorkingHours" class="text-danger small"></span>
+                        <!-- Çalışma Saatleri -->
+                        <div class="mb-4">
+                            <label asp-for="WorkingHours" class="form-label fw-semibold">
+                                Çalışma Saatleri
+                            </label>
+                            <input asp-for="WorkingHours"
+                                   class="form-control"
+                                   placeholder="Örn: 09:00 - 22:00" />
+                            <span asp-validation-for="WorkingHours" class="text-danger small"></span>
                         </div>
 
                         <hr />
 
-                        <!-- Service items placeholder if needed, functionality requires backend support -->
-
+                        <!-- Buttons -->
                         <div class="d-flex justify-content-between">
-                            <a asp-action="Index" class="btn btn-secondary">
-                                <i class="bi bi-x-circle"></i> İptal
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i>
+                                Vazgeç
                             </a>
-                            <button type="submit" class="btn btn-success">
-                                <i class="bi bi-check-circle"></i> Kaydet
+
+                            <button type="submit" class="btn btn-success px-4">
+                                <i class="bi bi-check-circle me-1"></i>
+                                Değişiklikleri Kaydet
                             </button>
                         </div>
                     </form>
                 </div>
             </div>
+
         </div>
     </div>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        $('#gymForm').on('submit', function () {
+            $(this).find('button[type="submit"]')
+                .prop('disabled', true)
+                .html('<span class="spinner-border spinner-border-sm me-2"></span>Kaydediliyor...');
+        });
+    </script>
 }

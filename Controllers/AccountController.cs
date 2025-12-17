@@ -34,7 +34,7 @@ namespace SporSalonuUygulamasi.Controllers
 
                 if (result.Succeeded)
                 {
-                    // ---> İŞTE BURASI: Giriş Başarılıysa Direkt Ana Sayfaya Git <---
+                    // Merkezi yönlendirme: Home/Index rol kontrolünü yapıp yönlendirecek.
                     return RedirectToAction("Index", "Home");
                 }
 
@@ -74,7 +74,6 @@ namespace SporSalonuUygulamasi.Controllers
                     // Kayıt olur olmaz otomatik giriş yaptır
                     await _signInManager.SignInAsync(user, isPersistent: false);
 
-                    // ---> İŞTE BURASI: Kayıt Başarılıysa Direkt Ana Sayfaya Git <---
                     return RedirectToAction("Index", "Home");
                 }
 

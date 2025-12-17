@@ -5,43 +5,97 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Randevu Düzenle</h1>
+<div class="container mt-4">
 
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <input type="hidden" asp-for="UserId" />
-            
-            <div class="form-group mb-3">
-                <label asp-for="AppointmentDate" class="control-label">Tarih ve Saat</label>
-                <input asp-for="AppointmentDate" class="form-control" />
-                <span asp-validation-for="AppointmentDate" class="text-danger"></span>
-            </div>
-            
-            <div class="form-group mb-3">
-                <label asp-for="TrainerId" class="control-label">Eğitmen</label>
-                <select asp-for="TrainerId" class="form-control" asp-items="ViewBag.TrainerId"></select>
-                <span asp-validation-for="TrainerId" class="text-danger"></span>
-            </div>
-            
-            <div class="form-group mb-3">
-                <label asp-for="ServiceId" class="control-label">Hizmet</label>
-                <select asp-for="ServiceId" class="form-control" asp-items="ViewBag.ServiceId"></select>
-                <span asp-validation-for="ServiceId" class="text-danger"></span>
-            </div>
-
-            <div class="form-group form-check mb-3">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="IsConfirmed" /> @Html.DisplayNameFor(model => model.IsConfirmed)
-                </label>
-            </div>
-
-            <div class="form-group">
-                <input type="submit" value="Kaydet" class="btn btn-primary" />
-                <a asp-action="Index" class="btn btn-secondary">Listeye Dön</a>
-            </div>
-        </form>
+    <!-- Başlık -->
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="fw-bold">
+                <i class="bi bi-pencil-square me-2 text-warning"></i>
+                Randevu Düzenle
+            </h2>
+            <p class="text-muted mb-0">
+                Seçili randevunun tarih, eğitmen ve durum bilgilerini güncelleyebilirsiniz.
+            </p>
+        </div>
     </div>
+
+    <!-- Kart -->
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+
+                    <form asp-action="Edit">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="UserId" />
+
+                        <!-- Tarih -->
+                        <div class="mb-3">
+                            <label asp-for="AppointmentDate" class="form-label fw-semibold">
+                                Tarih ve Saat
+                            </label>
+                            <input asp-for="AppointmentDate" class="form-control" />
+                            <span asp-validation-for="AppointmentDate" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Eğitmen -->
+                        <div class="mb-3">
+                            <label asp-for="TrainerId" class="form-label fw-semibold">
+                                Eğitmen
+                            </label>
+                            <select asp-for="TrainerId"
+                                    class="form-select"
+                                    asp-items="ViewBag.TrainerId">
+                            </select>
+                            <span asp-validation-for="TrainerId" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Hizmet -->
+                        <div class="mb-3">
+                            <label asp-for="ServiceId" class="form-label fw-semibold">
+                                Hizmet
+                            </label>
+                            <select asp-for="ServiceId"
+                                    class="form-select"
+                                    asp-items="ViewBag.ServiceId">
+                            </select>
+                            <span asp-validation-for="ServiceId" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Onay Durumu -->
+                        <div class="form-check form-switch mb-4">
+                            <input class="form-check-input"
+                                   asp-for="IsConfirmed"
+                                   id="confirmSwitch">
+                            <label class="form-check-label fw-semibold"
+                                   for="confirmSwitch">
+                                Randevu Onaylı
+                            </label>
+                        </div>
+
+                        <!-- Butonlar -->
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i>
+                                Listeye Dön
+                            </a>
+
+                            <button type="submit" class="btn btn-warning text-white px-4">
+                                <i class="bi bi-save"></i>
+                                Kaydet
+                            </button>
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
 </div>

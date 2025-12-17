@@ -1,8 +1,8 @@
 using System.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization; // Yetkilendirme (Authorize) için eklendi!
 using SporSalonuUygulamasi.Models;
-using Microsoft.Extensions.Logging; // Logger'ýn düzgün çalýþmasý için (zaten vardý)
+using Microsoft.Extensions.Logging;
 
 namespace SporSalonuUygulamasi.Controllers
 {
@@ -15,37 +15,32 @@ namespace SporSalonuUygulamasi.Controllers
             _logger = logger;
         }
 
-        // 1. Anasayfa (Index) - BURASI GÜNCELLENDÝ
         public IActionResult Index()
         {
-            // Kullanýcý giriþ yapmýþsa (kimliði doðrulanmýþsa) Dashboard'a yönlendir.
             if (User.Identity.IsAuthenticated)
             {
-                return RedirectToAction("Dashboard");
+                if (User.IsInRole(SporSalonuUygulamasi.Utility.Roles.Admin))
+                {
+                    return RedirectToAction("Index", "Admin");
+                }
+                return RedirectToAction("Welcome");
             }
 
-            // Giriþ yapmamýþsa, Login/Register sayfasýna yönlendir.
-            return RedirectToAction("LoginRegister", "Account");
+            return RedirectToAction("Login", "Account");
         }
 
-        // 2. Dashboard Action'ý - YENÝ EKLENDÝ
-        [Authorize] // Sadece giriþ yapmýþ kullanýcýlar eriþebilir
-        public IActionResult Dashboard()
+        [Authorize]
+        public IActionResult Welcome()
         {
-            // Views/Home/Dashboard.cshtml dosyasýný görüntüleyecektir.
             return View();
         }
 
-        // 3. Admin Paneli - YENÝ EKLENDÝ (Rol Bazlý Yetkilendirme)
-        
-        [Authorize(Roles = "Admin")] // Sadece "Admin" rolüne sahip kullanýcýlar eriþebilir. [cite: 49]
+        [Authorize(Roles = "Admin")]
         public IActionResult AdminPanel()
         {
-            // Views/Home/AdminPanel.cshtml dosyasýný görüntüleyecektir.
-            return View();
+            return RedirectToAction("Index", "Admin");
         }
 
-        // Mevcut Privacy ve Error metodlarý aþaðýda kaldý.
         public IActionResult Privacy()
         {
             return View();

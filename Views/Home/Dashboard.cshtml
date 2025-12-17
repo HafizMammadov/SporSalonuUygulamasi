@@ -2,11 +2,77 @@
     ViewData["Title"] = "Üye Paneli";
 }
 
-<div class="container mt-5">
-    <h1 class="display-4 text-primary">Hoş Geldiniz!</h1>
-    <p class="lead">Spor Salonu Yönetim Sistemi Üye Paneli</p>
-    <hr>
-    <p>Burada kişiselleştirilmiş egzersiz önerileri ve randevu takibi gibi üyelere özel içerikler yer alacaktır.</p>
+<div class="container mt-4">
 
-    <a href="/Appointment/Create" class="btn btn-success">Yeni Randevu Al</a>
+    <!-- BAŞLIK -->
+    <div class="mb-4">
+        <h1 class="fw-bold text-primary">Üye Paneli</h1>
+        <p class="text-muted">
+            Randevularını yönet, spor planını kontrol et
+        </p>
+    </div>
+
+    <!-- HIZLI AKSİYONLAR -->
+    <div class="row mb-4">
+
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-calendar-plus fs-1 text-success"></i>
+                    <h5 class="mt-3">Yeni Randevu</h5>
+                    <p class="text-muted small">
+                        Uygun tarih ve eğitmeni seç
+                    </p>
+                    <a asp-controller="Appointment"
+                       asp-action="Create"
+                       class="btn btn-success btn-sm">
+                        Randevu Al
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-calendar-check fs-1 text-primary"></i>
+                    <h5 class="mt-3">Randevularım</h5>
+                    <p class="text-muted small">
+                        Geçmiş ve yaklaşan randevular
+                    </p>
+                    <a asp-controller="Appointment"
+                       asp-action="MyAppointments"
+                       class="btn btn-outline-primary btn-sm">
+                        Görüntüle
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-person-lines-fill fs-1 text-warning"></i>
+                    <h5 class="mt-3">Profilim</h5>
+                    <p class="text-muted small">
+                        Kişisel bilgilerini güncelle
+                    </p>
+                    <a asp-controller="Account"
+                       asp-action="Profile"
+                       class="btn btn-outline-warning btn-sm">
+                        Profili Aç
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- BİLGİ KUTUSU -->
+    <div class="alert alert-info shadow-sm">
+        <i class="bi bi-info-circle"></i>
+        <strong>Bilgi:</strong>
+        Yeni randevu oluşturduktan sonra eğitmen onayı gerekebilir.
+    </div>
+
 </div>

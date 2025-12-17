@@ -3,72 +3,76 @@
 }
 
 <div class="container mt-5">
-    <h1 class="text-center mb-5">Admin Kontrol Paneli</h1>
 
-    <div class="row justify-content-center">
-        <!-- Salonlar Kartı -->
-        <div class="col-md-5 mb-4">
+    <div class="row mb-5">
+        <div class="col text-center">
+            <h1 class="fw-bold">
+                <i class="bi bi-speedometer2 me-2 text-primary"></i>
+                Admin Kontrol Paneli
+            </h1>
+            <p class="text-muted">
+            </p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center g-4">
+
+        <!-- Salonlar -->
+        <div class="col-md-6 col-lg-4">
             <div class="card shadow h-100 border-0 hover-effect">
                 <div class="card-body text-center p-5">
-                    <div class="mb-3">
-                        <i class="bi bi-building fs-1 text-primary"></i>
-                    </div>
-                    <h3 class="card-title">Salonlar</h3>
-                    <p class="card-text text-muted">Spor salonlarını listele, düzenle ve yeni salon ekle.</p>
-                    <a asp-controller="Gym" asp-action="Index" class="btn btn-primary btn-lg w-100 mt-3">
+                    <i class="bi bi-building fs-1 text-primary mb-3"></i>
+                    <h4 class="fw-bold">Salonlar</h4>
+                    <p class="text-muted">Salonları listele, düzenle ve yeni salon ekle.</p>
+                    <a asp-controller="Gym" asp-action="Index" class="btn btn-primary w-100">
                         Salonları Yönet
                     </a>
                 </div>
             </div>
         </div>
 
-        <!-- Eğitmenler Kartı -->
-        <div class="col-md-5 mb-4">
+        <!-- Eğitmenler -->
+        <div class="col-md-6 col-lg-4">
             <div class="card shadow h-100 border-0 hover-effect">
                 <div class="card-body text-center p-5">
-                    <div class="mb-3">
-                        <i class="bi bi-person-badge fs-1 text-success"></i>
-                    </div>
-                    <h3 class="card-title">Eğitmenler</h3>
-                    <p class="card-text text-muted">Eğitmen kadrosunu görüntüle, yeni eğitmen al ve bilgilerini güncelle.</p>
-                    <a asp-controller="Trainer" asp-action="Index" class="btn btn-success btn-lg w-100 mt-3">
+                    <i class="bi bi-person-badge fs-1 text-success mb-3"></i>
+                    <h4 class="fw-bold">Eğitmenler</h4>
+                    <p class="text-muted">Eğitmenleri görüntüle ve yönet.</p>
+                    <a asp-controller="Trainer" asp-action="Index" class="btn btn-success w-100">
                         Eğitmenleri Yönet
                     </a>
                 </div>
             </div>
         </div>
-        
-        <!-- Üye Yönetimi Kartı -->
-        <div class="col-md-5 mb-4">
+
+        <!-- Üyeler -->
+        <div class="col-md-6 col-lg-4">
             <div class="card shadow h-100 border-0 hover-effect">
                 <div class="card-body text-center p-5">
-                    <div class="mb-3">
-                        <i class="bi bi-people fs-1 text-warning"></i>
-                    </div>
-                    <h3 class="card-title">Üyeler</h3>
-                    <p class="card-text text-muted">Kayıtlı üyeleri listele, bilgilerini düzenle veya sil.</p>
-                    <a asp-controller="Members" asp-action="Index" class="btn btn-warning btn-lg w-100 mt-3 text-white">
+                    <i class="bi bi-people fs-1 text-warning mb-3"></i>
+                    <h4 class="fw-bold">Üyeler</h4>
+                    <p class="text-muted">Üye bilgilerini yönetin.</p>
+                    <a asp-controller="Members" asp-action="Index" class="btn btn-warning text-white w-100">
                         Üyeleri Yönet
                     </a>
                 </div>
             </div>
         </div>
 
-        <!-- Randevular Kartı -->
-        <div class="col-md-5 mb-4">
+        <!-- Randevular -->
+        <div class="col-md-6 col-lg-4">
             <div class="card shadow h-100 border-0 hover-effect">
                 <div class="card-body text-center p-5">
-                    <div class="mb-3">
-                        <i class="bi bi-calendar-check fs-1 text-info"></i>
-                    </div>
-                    <h3 class="card-title">Randevular</h3>
-                    <p class="card-text text-muted">Tüm randevuları görüntüle, onayla veya düzenle.</p>
-                    <a asp-controller="Appointment" asp-action="Index" class="btn btn-info btn-lg w-100 mt-3 text-white">
+                    <i class="bi bi-calendar-check fs-1 text-info mb-3"></i>
+                    <h4 class="fw-bold">Randevular</h4>
+                    <p class="text-muted">Tüm randevuları yönetin.</p>
+                    <a asp-controller="Appointment" asp-action="Index" class="btn btn-info text-white w-100">
                         Randevuları Yönet
                     </a>
                 </div>
             </div>
         </div>
+
     </div>
 </div>
 
@@ -76,7 +80,8 @@
     .hover-effect {
         transition: transform 0.3s ease;
     }
-    .hover-effect:hover {
-        transform: translateY(-5px);
-    }
+
+        .hover-effect:hover {
+            transform: translateY(-6px);
+        }
 </style>

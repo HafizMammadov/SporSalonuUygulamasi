@@ -5,12 +5,12 @@ namespace SporSalonuUygulamasi.Models
     // Giriş yap bilgileri için model
     public class LoginViewModel
     {
-        [Required(ErrorMessage = "E-posta alanı zorunludur.")]
+        [Required(ErrorMessage = "Bu bilgi zorunludur.")]
         [EmailAddress(ErrorMessage = "Lütfen geçerli bir E-posta adresi girin.")]
         [Display(Name = "E-posta")]
         public string Email { get; set; }
 
-        [Required(ErrorMessage = "Şifre alanı zorunludur.")]
+        [Required(ErrorMessage = "Bu bilgi zorunludur.")]
         [DataType(DataType.Password)]
         [Display(Name = "Şifre")]
         public string Password { get; set; }
