@@ -89,6 +89,73 @@ namespace SporSalonuUygulamasi.Controllers
         // ==========================================
         // LOGOUT (ÇIKIŞ) İŞLEMİ
         // ==========================================
+        // ==========================================
+        // PROFILE (PROFİL) İŞLEMLERİ
+        // ==========================================
+        [Microsoft.AspNetCore.Authorization.Authorize]
+        [HttpGet]
+        public async Task<IActionResult> Profile()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return NotFound();
+
+            var model = new ProfileViewModel
+            {
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                BirthDate = user.BirthDate
+            };
+            return View(model);
+        }
+
+        [Microsoft.AspNetCore.Authorization.Authorize]
+        [HttpPost]
+        public async Task<IActionResult> Profile(ProfileViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null) return NotFound();
+
+                user.FirstName = model.FirstName;
+                user.LastName = model.LastName;
+                user.BirthDate = model.BirthDate;
+
+                var result = await _userManager.UpdateAsync(user);
+                if (result.Succeeded)
+                {
+                    TempData["SuccessMessage"] = "Profiliniz güncellendi.";
+                    return RedirectToAction("Profile");
+                }
+
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError("", error.Description);
+                }
+            }
+            return View(model);
+        }
+
+        [Microsoft.AspNetCore.Authorization.Authorize]
+        [HttpPost]
+        public async Task<IActionResult> DeleteAccount()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return NotFound();
+
+            // Önce oturumu kapat
+            await _signInManager.SignOutAsync();
+            
+            // Sonra kullanıcıyı sil
+            var result = await _userManager.DeleteAsync(user);
+            
+            return RedirectToAction("Index", "Home");
+        }
+
+        // ==========================================
+        // LOGOUT (ÇIKIŞ) İŞLEMİ
+        // ==========================================
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();

@@ -50,7 +50,55 @@ public class AppointmentsApiController : ControllerBase
             return NotFound("Bu kullanıcıya ait randevu bulunamadı.");
         }
 
-        // 3. Randevuları JSON formatında döndür
+    // 3. Randevuları JSON formatında döndür
         return Ok(myAppointments);
+    }
+
+    // GET: api/AppointmentsApi/Filter
+    // ÖRNEK KULLANIM: api/AppointmentsApi/Filter?startDate=2025-01-01&isConfirmed=true
+    [HttpGet("Filter")]
+    public async Task<ActionResult<IEnumerable<Appointment>>> GetFilteredAppointments(DateTime? startDate, DateTime? endDate, bool? isConfirmed)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+
+        // 1. Temel Sorgu (Henüz veritabanına gitmedi, IQueryable)
+        var query = _context.Appointments
+            .Include(a => a.Service)
+            .Include(a => a.Trainer)
+            .Where(a => a.UserId == userId) // Kendi randevuları
+            .AsQueryable();
+
+        // 2. Dinamik Filtreleme (LINQ)
+        
+        // Başlangıç tarihi varsa
+        if (startDate.HasValue)
+        {
+            query = query.Where(a => a.AppointmentDate >= startDate.Value);
+        }
+
+        // Bitiş tarihi varsa
+        if (endDate.HasValue)
+        {
+            query = query.Where(a => a.AppointmentDate <= endDate.Value);
+        }
+
+        // Onay durumu varsa
+        if (isConfirmed.HasValue)
+        {
+            query = query.Where(a => a.IsConfirmed == isConfirmed.Value);
+        }
+
+        // 3. Sıralama ve Veriyi Çekme
+        var result = await query
+            .OrderBy(a => a.AppointmentDate)
+            .ToListAsync();
+
+        if (!result.Any())
+        {
+            return NotFound("Kriterlere uygun randevu bulunamadı.");
+        }
+
+        return Ok(result);
     }
 }

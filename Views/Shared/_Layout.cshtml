@@ -65,10 +65,12 @@
                         @if (User.Identity.IsAuthenticated)
                         {
                             <li class="nav-item">
-                                <span class="nav-link text-dark fw-bold">Merhaba, @User.Identity.Name</span>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-danger" asp-controller="Account" asp-action="Logout">Çıkış Yap</a>
+                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Profile" title="Profilim">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                                        <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+                                        <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
+                                    </svg>
+                                </a>
                             </li>
                         }
                         else
@@ -89,7 +91,70 @@
         </main>
     </div>
 
+    <!-- RICH FOOTER START -->
+    <footer class="glass-footer">
+        <div class="container">
+            <div class="row gy-4 footer-content">
+                <!-- COL 1: Brand & About -->
+                <div class="col-lg-4 col-md-6">
+                    <h5 class="text-white mb-3">SporSalonu<span class="text-primary">.</span></h5>
+                    <p class="small text-muted mb-0">Sağlıklı yaşam ve güçlü bir gelecek için sizinle birlikteyiz. En son teknoloji ekipmanlar ve uzman kadromuzla hizmetinizdeyiz.</p>
+                </div>
 
+                <!-- COL 2: Quick Links -->
+                <div class="col-lg-2 col-md-6">
+                    <h5>Hızlı Erişim</h5>
+                    <ul class="footer-links">
+                        <li><a asp-controller="Home" asp-action="Index">Ana Sayfa</a></li>
+                        <li><a asp-controller="Account" asp-action="Profile">Profilim</a></li>
+                        <li><a asp-controller="Appointment" asp-action="Create">Randevu Al</a></li>
+                    </ul>
+                </div>
+
+                <!-- COL 3: Legal -->
+                <div class="col-lg-3 col-md-6">
+                    <h5>Yasal Bilgiler</h5>
+                    <ul class="footer-links">
+                        <li><a href="#">Gizlilik Politikası</a></li>
+                        <li><a href="#">Çerez Politikası</a></li>
+                        <li><a href="#">Kullanım Şartları</a></li>
+                        <li><a href="#">KVKK Aydınlatma</a></li>
+                    </ul>
+                </div>
+
+                <!-- COL 4: Contact -->
+                <div class="col-lg-3 col-md-6">
+                    <h5>İletişim</h5>
+                    <p class="small text-muted mb-2">📍 Fulya Mah. Büyükdere Cad. No:123, Şişli/İstanbul</p>
+                    <p class="small text-muted mb-2">📞 +90 (212) 555 00 00</p>
+                    <p class="small text-muted mb-3">✉️ info@sporsalonu.com</p>
+                    <div class="social-icons">
+                        <a href="#"><i class="bi bi-instagram"></i></a>
+                        <a href="#"><i class="bi bi-twitter"></i></a>
+                        <a href="#"><i class="bi bi-facebook"></i></a>
+                        <a href="#"><i class="bi bi-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div class="container">
+                    <div class="row align-items-center">
+                        <div class="col-md-6 text-md-start">
+                            &copy; @DateTime.Now.Year <strong>SporSalonu Uygulaması</strong>. Tüm hakları saklıdır.
+                        </div>
+                        <div class="col-md-6 text-md-end mt-2 mt-md-0">
+                            Designed by <span class="text-primary">Antigravity AI</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- RICH FOOTER END -->
+
+    <!-- Icons CDN (Bootstrap Icons) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
