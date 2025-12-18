@@ -40,22 +40,52 @@ Kişisel Bilgiler:
 - Aktivite Seviyesi: {model.ActivityLevel}
 - Ek Notlar: {model.AdditionalNotes}
 
-Lütfen yanıtı şu formatta ver (Markdown kullanarak):
-# Kişiye Özel Sağlık Planı
-## 1. Diyet Programı
-(Günlük örnek menü ve beslenme tavsiyeleri)
-## 2. Egzersiz Programı
-(Haftalık plan ve hareketler)
+Lütfen yanıtı SADECE geçerli bir JSON formatında ver. Başka hiçbir metin veya açıklama ekleme.
+JSON formatı şu şekilde olmalıdır:
+{{
+  ""diet_plan"": ""Markdown formatında detaylı diyet programı buraya..."",
+  ""exercise_plan"": ""Markdown formatında detaylı egzersiz programı buraya...""
+}}
 ";
 
-            // 2. ADIM: Metni Getir (Hata olsa bile yedek metin gelir)
+            // 2. ADIM: Metni Getir
             string textResult = await _geminiService.GenerateDietAndWorkoutPlanAsync(prompt);
 
-            // 3. ADIM: Resmi Getir (SimpleImageService kullanır)
+            // 3. ADIM: JSON Parse İşlemi
+            string dietPlan = "";
+            string exercisePlan = "";
+
+            try
+            {
+                // Markdown kod bloklarını temizle (eğer gelirse)
+                textResult = textResult.Replace("```json", "").Replace("```", "").Trim();
+
+                using (var doc = System.Text.Json.JsonDocument.Parse(textResult))
+                {
+                    var root = doc.RootElement;
+                    if (root.TryGetProperty("diet_plan", out var dietProp))
+                    {
+                        dietPlan = dietProp.GetString();
+                    }
+                    if (root.TryGetProperty("exercise_plan", out var exerciseProp))
+                    {
+                        exercisePlan = exerciseProp.GetString();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Fallback: JSON parse edilemezse ham metni diyet kısmına bas, egzersizi boş geç veya hata mesajı ver
+                dietPlan = textResult; 
+                exercisePlan = "Ayrıştırma yapılamadı. Tüm plan Soldaki 'Beslenme Programı' sekmesindedir.";
+            }
+
+            // 4. ADIM: Resmi Getir (SimpleImageService kullanır)
             string imageUrl = _imageService.ResimUrlOlustur(model.Gender, model.Goal);
 
-            // 4. ADIM: Sonuçları View'a Gönder
-            ViewBag.PlanResult = textResult;
+            // 5. ADIM: Sonuçları View'a Gönder
+            ViewBag.DietPlan = dietPlan;
+            ViewBag.ExercisePlan = exercisePlan;
             ViewBag.GeneratedImageUrl = imageUrl;
 
             return View("Result");
