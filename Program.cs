@@ -108,8 +108,8 @@ using (var scope = app.Services.CreateScope())
     }
 
     // Admin kullanıcısı oluştur
-    string adminEmail = "admin@sakarya.edu.tr";
-    string adminPassword = "Hafiz1234";
+    string adminEmail = ""; //gelistici tarafindan doldurulacak
+    string adminPassword = "";//gelistici tarafindan doldurulacak
     string adminRole = Roles.Admin;
 
     var adminUser = await userManager.FindByEmailAsync(adminEmail);
