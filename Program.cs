@@ -3,11 +3,12 @@ using Microsoft.EntityFrameworkCore;
 using SporSalonuUygulamasi.Data;
 using SporSalonuUygulamasi.Models;
 using SporSalonuUygulamasi.Utility;
+using SporSalonuUygulamasi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // ==========================================
-// 1. VERİTABANI
+// 1. VERİTABANI (DATABASE)
 // ==========================================
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -16,12 +17,13 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
 // ==========================================
-// 2. IDENTITY
+// 2. IDENTITY (KULLANICI YÖNETİMİ)
 // ==========================================
 builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
 {
+    // Şifre kuralları (Öğrenci projesi olduğu için esnek bıraktık)
     options.Password.RequireDigit = false;
-    options.Password.RequiredLength = 8;
+    options.Password.RequiredLength = 3; // Test kolaylığı için kısalttım
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = false;
     options.Password.RequireLowercase = false;
@@ -36,21 +38,28 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 // ==========================================
-// 3. MVC + API
+// 3. MVC VE API AYARLARI
 // ==========================================
 builder.Services.AddControllersWithViews();
 
-// 🔥🔥🔥 SWAGGER (EKSİK OLAN KISIM BUYDU)
-// ==========================================
+// Swagger (API testi için)
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // ==========================================
+// 4. ÖZEL SERVİSLER (YAPAY ZEKA)
+// ==========================================
+// Gemini (Metin Üretimi) için HttpClient servisi
+builder.Services.AddHttpClient<GeminiAiService>();
+
+// Resim URL Üretimi için Basit Servis (Yeni Eklenen)
+builder.Services.AddScoped<SimpleImageService>();
+
 
 var app = builder.Build();
 
 // ==========================================
-// 4. MIDDLEWARE
+// 5. MIDDLEWARE (UYGULAMA AKIŞI)
 // ==========================================
 if (app.Environment.IsDevelopment())
 {
@@ -68,11 +77,11 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseAuthentication();
-app.UseAuthorization();
+app.UseAuthentication(); // Kimlik doğrulama
+app.UseAuthorization();  // Yetkilendirme
 
 // ==========================================
-// 5. ROUTE
+// 6. ROUTE AYARLARI
 // ==========================================
 app.MapControllerRoute(
     name: "default",
@@ -81,13 +90,14 @@ app.MapControllerRoute(
 app.MapControllers();
 
 // ==========================================
-// 6. ROL + İLK ADMIN
+// 7. ROL VE ADMİN OLUŞTURMA (SEED DATA)
 // ==========================================
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
 
+    // Rolleri oluştur
     string[] roleNames = { Roles.Admin, Roles.User };
     foreach (var roleName in roleNames)
     {
@@ -97,6 +107,7 @@ using (var scope = app.Services.CreateScope())
         }
     }
 
+    // Admin kullanıcısı oluştur
     string adminEmail = "admin@sakarya.edu.tr";
     string adminPassword = "Hafiz1234";
     string adminRole = Roles.Admin;

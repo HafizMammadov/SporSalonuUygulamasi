@@ -1,62 +1,64 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SporSalonuUygulamasi.Models;
-using System.Threading.Tasks;
-
-// Not: Artık Newtonsoft.Json ve System.Text'e ihtiyacımız yok
-// Bu kütüphaneler gerçek API bağlantısı için gerekliydi.
+using SporSalonuUygulamasi.Services;
 
 namespace SporSalonuUygulamasi.Controllers
 {
     public class AiController : Controller
     {
-        // GET: Sayfayı Aç
-        public IActionResult Index()
+        // Servisleri tanımlıyoruz
+        private readonly GeminiAiService _geminiService;
+        private readonly SimpleImageService _imageService;
+
+        // Constructor ile servisleri içeri alıyoruz
+        public AiController(GeminiAiService geminiService, SimpleImageService imageService)
         {
-            return View(new AiViewModel());
+            _geminiService = geminiService;
+            _imageService = imageService;
         }
 
-        // POST: Form gönderilince Simülasyon çalışır (B PLAN)
-        [HttpPost]
-        public async Task<IActionResult> Index(AiViewModel model)
+        [HttpGet]
+        public IActionResult Index()
         {
-            if (!ModelState.IsValid) return View(model);
+            return View(new AiConsultantViewModel());
+        }
 
-            // GÜVENLİ VE HATASIZ ÇALIŞAN SİMÜLASYON MODU
+        [HttpPost]
+        public async Task<IActionResult> GeneratePlan(AiConsultantViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View("Index", model);
+            }
 
-            // 2 saniye bekle (Yapay zeka düşünüyormuş gibi hissettirir)
-            await Task.Delay(2000);
+            // 1. ADIM: Prompt Hazırlama
+            string prompt = $@"
+Bana aşağıdaki özelliklere sahip bir kişi için kapsamlı bir diyet ve egzersiz programı hazırla.
+Kişisel Bilgiler:
+- Yaş: {model.Age}, Boy: {model.Height} cm, Kilo: {model.Weight} kg
+- Cinsiyet: {model.Gender}, Hedef: {model.Goal}
+- Aktivite Seviyesi: {model.ActivityLevel}
+- Ek Notlar: {model.AdditionalNotes}
 
-            // Kullanıcının girdiği bilgilere göre dinamik görünen sahte bir cevap oluşturuyoruz.
-            string sahteCevap = $@"
-                <h4>Merhaba! Ben AI Antrenörün.</h4>
-                <p>Girdiğin bilgilere göre (<b>{model.Height} cm</b> boy, <b>{model.Weight} kg</b> ağırlık ve hedef: <b>{model.Goal}</b>) senin için özel plan hazırladım.</p>
-                
-                <hr>
-                
-                <h5>🥗 Günlük Beslenme Önerisi</h5>
-                <ul>
-                    <li><b>Kahvaltı:</b> 2 adet haşlanmış yumurta, bir kase yulaf ezmesi ve bir adet meyve.</li>
-                    <li><b>Öğle:</b> Yağsız ızgara et/tavuk (150g) ve büyük bir yeşil salata.</li>
-                    <li><b>Ara Öğün:</b> Bir avuç ceviz/badem veya protein barı.</li>
-                    <li><b>Akşam:</b> Hafif zeytinyağlı sebze yemeği ve bir kase yoğurt.</li>
-                </ul>
+Lütfen yanıtı şu formatta ver (Markdown kullanarak):
+# Kişiye Özel Sağlık Planı
+## 1. Diyet Programı
+(Günlük örnek menü ve beslenme tavsiyeleri)
+## 2. Egzersiz Programı
+(Haftalık plan ve hareketler)
+";
 
-                <h5>💪 Antrenman Programı (Hedef: {model.Goal})</h5>
-                <p>Haftada 3 gün bu temel hareketleri yapmalısın:</p>
-                <ul>
-                    <li><b>1. Hareket:</b> Squat (3 set x 12 tekrar) - Ana Bacak hareketi.</li>
-                    <li><b>2. Hareket:</b> Bench Press (3 set x 10 tekrar) - Göğüs kasları için.</li>
-                    <li><b>3. Hareket:</b> Barbell Row (3 set x 10 tekrar) - Sırt kasları için.</li>
-                </ul>
-                
-                <br>
-                <div class='alert alert-info'>
-                    <b>AI Notu:</b> Bu program başlangıç seviyesi içindir ve {model.Goal} hedefine yönelik ayarlanmıştır.
-                </div>";
+            // 2. ADIM: Metni Getir (Hata olsa bile yedek metin gelir)
+            string textResult = await _geminiService.GenerateDietAndWorkoutPlanAsync(prompt);
 
-            model.AiResponse = sahteCevap;
+            // 3. ADIM: Resmi Getir (SimpleImageService kullanır)
+            string imageUrl = _imageService.ResimUrlOlustur(model.Gender, model.Goal);
 
-            return View(model);
+            // 4. ADIM: Sonuçları View'a Gönder
+            ViewBag.PlanResult = textResult;
+            ViewBag.GeneratedImageUrl = imageUrl;
+
+            return View("Result");
         }
     }
 }

@@ -1,0 +1,41 @@
+@{
+    ViewData["Title"] = "Programınız Hazır";
+}
+
+<div class="container mt-5">
+    <div class="text-center mb-4">
+        <h2 class="display-6">Yapay Zeka Destekli Değişim Programı</h2>
+        <p class="text-muted">Senin verilerine özel olarak hazırlandı.</p>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-5 mb-4">
+            <div class="card shadow border-0">
+                <div class="card-body p-2 text-center bg-light">
+                    <h5 class="card-title mt-2">Hedeflenen Görünüm</h5>
+                    <img src="@ViewBag.GeneratedImageUrl" class="img-fluid rounded shadow-sm" alt="AI Generated Body" style="width: 100%; object-fit: cover;">
+                    <small class="text-muted d-block mt-2">
+                        *Yapay zeka tarafından hedeflerine uygun olarak oluşturulmuştur.
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Diyet ve Egzersiz Planı</h5>
+                </div>
+                <div class="card-body">
+                    <div style="white-space: pre-wrap; font-family: 'Segoe UI', sans-serif;">
+                        @Html.Raw(ViewBag.PlanResult)
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="text-center my-5">
+        <a href="/Ai/Index" class="btn btn-outline-primary btn-lg">Yeni Plan Oluştur</a>
+    </div>
+</div>

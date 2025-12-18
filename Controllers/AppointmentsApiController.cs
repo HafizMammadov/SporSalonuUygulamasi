@@ -15,7 +15,10 @@ namespace SporSalonuUygulamasi.Controllers
             _context = context;
         }
 
-        // 1️⃣ RANDEVULARI LİSTELE (LINQ)
+        // ==========================================
+        // 1️⃣ TÜM RANDEVULAR (LINQ + DTO)
+        // GET: api/AppointmentsApi/Appointments
+        // ==========================================
         [HttpGet("Appointments")]
         public IActionResult GetAppointments()
         {
@@ -27,14 +30,17 @@ namespace SporSalonuUygulamasi.Controllers
                     a.Id,
                     a.AppointmentDate,
                     a.IsConfirmed,
-                    TrainerFullName = a.Trainer.FirstName + " " + a.Trainer.LastName
+                    TrainerName = a.Trainer.FirstName + " " + a.Trainer.LastName
                 })
                 .ToList();
 
             return Ok(appointments);
         }
 
-        // 2️⃣ TÜM EĞİTMENLER
+        // ==========================================
+        // 2️⃣ TÜM ANTRENÖRLER
+        // GET: api/AppointmentsApi/Trainers
+        // ==========================================
         [HttpGet("Trainers")]
         public IActionResult GetTrainers()
         {
@@ -49,11 +55,14 @@ namespace SporSalonuUygulamasi.Controllers
             return Ok(trainers);
         }
 
-        // 3️⃣ BELİRLİ TARİHTE UYGUN EĞİTMENLER
+        // ==========================================
+        // 3️⃣ BELİRLİ TARİHTE UYGUN ANTRENÖRLER
+        // GET: api/AppointmentsApi/AvailableTrainers?date=2025-01-10
+        // ==========================================
         [HttpGet("AvailableTrainers")]
         public IActionResult GetAvailableTrainers(DateTime date)
         {
-            var trainers = _context.Trainers
+            var availableTrainers = _context.Trainers
                 .Where(t =>
                     !_context.Appointments.Any(a =>
                         a.TrainerId == t.Id &&
@@ -67,10 +76,13 @@ namespace SporSalonuUygulamasi.Controllers
                 })
                 .ToList();
 
-            return Ok(trainers);
+            return Ok(availableTrainers);
         }
 
+        // ==========================================
         // 4️⃣ TÜM ÜYELER (AppUser)
+        // GET: api/AppointmentsApi/Users
+        // ==========================================
         [HttpGet("Users")]
         public IActionResult GetUsers()
         {
