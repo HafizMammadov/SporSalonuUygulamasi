@@ -1,104 +1,90 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Identity;
-using SporSalonuUygulamasi.Data;
-using SporSalonuUygulamasi.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
+using SporSalonuUygulamasi.Data;
 
-// API Controller'lar [ApiController] ve base sınıfı Controller değil ControllerBase olmalıdır.
-[Route("api/[controller]")]
-[ApiController]
-// Bu API'ye sadece giriş yapanlar erişebilir.
-[Authorize]
-public class AppointmentsApiController : ControllerBase
+namespace SporSalonuUygulamasi.Controllers
 {
-    private readonly ApplicationDbContext _context;
-    private readonly UserManager<AppUser> _userManager;
-
-    // Constructor (Dependency Injection)
-    public AppointmentsApiController(ApplicationDbContext context, UserManager<AppUser> userManager)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class AppointmentsApiController : ControllerBase
     {
-        _context = context;
-        _userManager = userManager;
-    }
+        private readonly ApplicationDbContext _context;
 
-    // GET: api/AppointmentsApi/MyAppointments
-    // Mevcut kullanıcının tüm randevularını getirir (LINQ ile filtreleme).
-    [HttpGet("MyAppointments")]
-    public async Task<ActionResult<IEnumerable<Appointment>>> GetMyAppointments()
-    {
-        // 1. Oturum açan kullanıcının ID'sini alıyoruz
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        if (userId == null)
+        public AppointmentsApiController(ApplicationDbContext context)
         {
-            // Eğer kullanıcı ID'si bulunamazsa yetkisiz erişim hatası döndür
-            return Unauthorized();
+            _context = context;
         }
 
-        // 2. LINQ Sorgusu: Veritabanından sadece bu kullanıcıya ait randevuları çekiyoruz.
-        var myAppointments = await _context.Appointments
-            .Include(a => a.Service) // Hizmet bilgilerini de getir
-            .Include(a => a.Trainer) // Eğitmen bilgilerini de getir
-            .Where(a => a.UserId == userId) // SADECE Kullanıcı ID'si eşleşenleri filtrele!
-            .OrderByDescending(a => a.AppointmentDate)
-            .ToListAsync();
-
-        if (myAppointments == null || myAppointments.Count == 0)
+        // 1️⃣ RANDEVULARI LİSTELE (LINQ)
+        [HttpGet("Appointments")]
+        public IActionResult GetAppointments()
         {
-            return NotFound("Bu kullanıcıya ait randevu bulunamadı.");
+            var appointments = _context.Appointments
+                .Include(a => a.Trainer)
+                .OrderBy(a => a.AppointmentDate)
+                .Select(a => new
+                {
+                    a.Id,
+                    a.AppointmentDate,
+                    a.IsConfirmed,
+                    TrainerFullName = a.Trainer.FirstName + " " + a.Trainer.LastName
+                })
+                .ToList();
+
+            return Ok(appointments);
         }
 
-    // 3. Randevuları JSON formatında döndür
-        return Ok(myAppointments);
-    }
-
-    // GET: api/AppointmentsApi/Filter
-    // ÖRNEK KULLANIM: api/AppointmentsApi/Filter?startDate=2025-01-01&isConfirmed=true
-    [HttpGet("Filter")]
-    public async Task<ActionResult<IEnumerable<Appointment>>> GetFilteredAppointments(DateTime? startDate, DateTime? endDate, bool? isConfirmed)
-    {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId == null) return Unauthorized();
-
-        // 1. Temel Sorgu (Henüz veritabanına gitmedi, IQueryable)
-        var query = _context.Appointments
-            .Include(a => a.Service)
-            .Include(a => a.Trainer)
-            .Where(a => a.UserId == userId) // Kendi randevuları
-            .AsQueryable();
-
-        // 2. Dinamik Filtreleme (LINQ)
-        
-        // Başlangıç tarihi varsa
-        if (startDate.HasValue)
+        // 2️⃣ TÜM EĞİTMENLER
+        [HttpGet("Trainers")]
+        public IActionResult GetTrainers()
         {
-            query = query.Where(a => a.AppointmentDate >= startDate.Value);
+            var trainers = _context.Trainers
+                .Select(t => new
+                {
+                    t.Id,
+                    FullName = t.FirstName + " " + t.LastName
+                })
+                .ToList();
+
+            return Ok(trainers);
         }
 
-        // Bitiş tarihi varsa
-        if (endDate.HasValue)
+        // 3️⃣ BELİRLİ TARİHTE UYGUN EĞİTMENLER
+        [HttpGet("AvailableTrainers")]
+        public IActionResult GetAvailableTrainers(DateTime date)
         {
-            query = query.Where(a => a.AppointmentDate <= endDate.Value);
+            var trainers = _context.Trainers
+                .Where(t =>
+                    !_context.Appointments.Any(a =>
+                        a.TrainerId == t.Id &&
+                        a.AppointmentDate.Date == date.Date
+                    )
+                )
+                .Select(t => new
+                {
+                    t.Id,
+                    FullName = t.FirstName + " " + t.LastName
+                })
+                .ToList();
+
+            return Ok(trainers);
         }
 
-        // Onay durumu varsa
-        if (isConfirmed.HasValue)
+        // 4️⃣ TÜM ÜYELER (AppUser)
+        [HttpGet("Users")]
+        public IActionResult GetUsers()
         {
-            query = query.Where(a => a.IsConfirmed == isConfirmed.Value);
+            var users = _context.Users
+                .Select(u => new
+                {
+                    u.Id,
+                    u.FirstName,
+                    u.LastName,
+                    u.Email
+                })
+                .ToList();
+
+            return Ok(users);
         }
-
-        // 3. Sıralama ve Veriyi Çekme
-        var result = await query
-            .OrderBy(a => a.AppointmentDate)
-            .ToListAsync();
-
-        if (!result.Any())
-        {
-            return NotFound("Kriterlere uygun randevu bulunamadı.");
-        }
-
-        return Ok(result);
     }
 }

@@ -7,6 +7,6 @@
         public int Weight { get; set; }     // Kilo
         public string Gender { get; set; }  // Cinsiyet
         public string Goal { get; set; }    // Hedef (Kilo ver / Kas yap)
-        public string? AiResponse { get; set; } // Yapay zekadan gelen cevap
+        public string AiResponse { get; set; } // Yapay zekadan gelen cevap
     }
 }

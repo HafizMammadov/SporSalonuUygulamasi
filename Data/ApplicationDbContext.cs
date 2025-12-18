@@ -4,8 +4,7 @@ using SporSalonuUygulamasi.Models;
 
 namespace SporSalonuUygulamasi.Data
 {
-    // IdentityDbContext kullanıyoruz çünkü giriş/çıkış işlemlerin var
-    public class ApplicationDbContext : IdentityDbContext
+    public class ApplicationDbContext : IdentityDbContext<AppUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -16,13 +15,5 @@ namespace SporSalonuUygulamasi.Data
         public DbSet<Trainer> Trainers { get; set; }
         public DbSet<Service> Services { get; set; }
         public DbSet<Gym> Gyms { get; set; }
-
-        protected override void OnModelCreating(ModelBuilder builder)
-        {
-            base.OnModelCreating(builder);
-
-            // Burada artık HourlyRate veya GymService ayarı YOK.
-            // Sadece gerekirse özel ayarlar eklenir.
-        }
     }
 }
