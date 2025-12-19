@@ -108,8 +108,8 @@ using (var scope = app.Services.CreateScope())
     }
 
     // Admin kullanıcısı oluştur
-    string adminEmail = ""; //gelistici tarafindan doldurulacak
-    string adminPassword = "";//gelistici tarafindan doldurulacak
+    string adminEmail = "admin@sakarya.edu.tr"; //gelistici tarafindan doldurulacak
+    string adminPassword = "123456789";//gelistici tarafindan doldurulacak
     string adminRole = Roles.Admin;
 
     var adminUser = await userManager.FindByEmailAsync(adminEmail);
@@ -130,6 +130,19 @@ using (var scope = app.Services.CreateScope())
         if (result.Succeeded)
         {
             await userManager.AddToRoleAsync(adminUser, adminRole);
+        }
+    }
+    else
+    {
+        // Kullanıcı zaten varsa şifresini güncelle (Reset)
+        // Bu sayede şifre değişse bile her çalıştırmada güncellenir.
+        var token = await userManager.GeneratePasswordResetTokenAsync(adminUser);
+        var result = await userManager.ResetPasswordAsync(adminUser, token, adminPassword);
+
+        if (!result.Succeeded)
+        {
+            // Eğer reset başarısız olursa (örn: eski şifre kuralları vs), loglanabilir
+            // Amaç: Geliştirme ortamında şifreyi garanti altına almak.
         }
     }
 }
