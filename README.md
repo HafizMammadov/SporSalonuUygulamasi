@@ -49,4 +49,4 @@ Sakarya Üniversitesi Web Programlama dersinin proje odevi olarak geliştirilen 
     ```
 
 3.  **Projeyi Başlatma:**
-    Projeyi çalıştırın (F5 veya `dotnet run`). Uygulama ilk açılışta otomatik olarak Admin kullanıcısını oluşturacaktır.
+    Projeyi Çalıştırın (F5  veya `dotnet run`). Uygulama ilk açılışta otomatik olarak Admin kullanıcısını oluşturacaktır.
