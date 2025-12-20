@@ -6,11 +6,9 @@ namespace SporSalonuUygulamasi.Controllers
 {
     public class AiController : Controller
     {
-        // Servisleri tanımlıyoruz
         private readonly GeminiAiService _geminiService;
         private readonly SimpleImageService _imageService;
 
-        // Constructor ile servisleri içeri alıyoruz
         public AiController(GeminiAiService geminiService, SimpleImageService imageService)
         {
             _geminiService = geminiService;

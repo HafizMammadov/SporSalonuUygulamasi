@@ -51,7 +51,7 @@ namespace SporSalonuUygulamasi.Controllers
                 user.FirstName = appUser.FirstName;
                 user.LastName = appUser.LastName;
                 user.Email = appUser.Email;
-                user.UserName = appUser.Email; // UserName genelde Email ile aynı tutulur
+                user.UserName = appUser.Email; 
 
                 var result = await _userManager.UpdateAsync(user);
                 if (result.Succeeded)
@@ -83,7 +83,7 @@ namespace SporSalonuUygulamasi.Controllers
                         {
                             ModelState.AddModelError("", error.Description);
                         }
-                        return View("Index", _userManager.Users.ToList()); // Hata varsa listeye dön ama hatayı göster (zor çünkü redirect yapıyoruz genelde)
+                        return View("Index", _userManager.Users.ToList()); 
                     }
                 }
                 catch (Exception ex)
